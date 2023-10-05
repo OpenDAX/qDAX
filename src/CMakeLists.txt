@@ -16,11 +16,14 @@
 
 qt_add_executable(qdax
      main.cpp
+     dax.cpp
+     tagmodel.cpp
      mainwindow.ui
      mainwindow.cpp
 )
 
-target_link_libraries(qdax PRIVATE Qt6::Widgets)
+target_link_libraries(qdax PRIVATE Qt6::Widgets dax daxlog)
+
 
 set_target_properties(qdax PROPERTIES
     WIN32_EXECUTABLE ON

@@ -16,40 +16,43 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
 
- *  Source code file for main window class
+ * Main source code file OpenDAX library interface
  */
 
-#include "mainwindow.h"
+#include <iostream>
 #include "dax.h"
-#include "tagmodel.h"
 
-MainWindow::MainWindow(Dax& d, QWidget *parent) : QMainWindow(parent), dax(d), tagmodel(d) {
-    setupUi(this);
-    treeView->setModel(&tagmodel);
-    actionConnect->trigger();
-
-}
-
-MainWindow::~MainWindow() {
-    disconnect();
-}
-
-
-void
-MainWindow::connect(void) {
-    if( dax.connect() == ERR_OK ) {
-        dax_log(LOG_DEBUG, "Connected");
-        actionDisconnect->setDisabled(false);
-        actionConnect->setDisabled(true);
+/* Dax Class Definitions */
+Dax::Dax(const char *name) {
+    ds = dax_init(name);
+    if(ds == NULL) {
+        std::cerr << "Unable to Initialize DaxState Object\n";
     }
 }
 
+Dax::~Dax() {
+    dax_free(ds);
+}
 
-void
-MainWindow::disconnect(void) {
-    actionConnect->setDisabled(false);
-    actionDisconnect->setDisabled(true);
+int Dax::configure(int argc, char **argv, int flags) {
+    return dax_configure(ds, argc, argv, flags);
+}
 
-    dax.disconnect();
-    dax_log(LOG_DEBUG, "Disconnected");
+int Dax::connect(void) {
+    int result =  dax_connect(ds);
+    if(result == ERR_OK) {
+       /* No setup work to do here.  We'll go straight to running */
+       dax_set_running(ds, 1);
+        /* We don't mess with the run/stop/kill callbacks */
+        dax_set_default_callbacks(ds);
+        dax_set_status(ds, "OK");
+    } else {
+        dax_log(LOG_ERROR, "dax_connect returned %d", result);
+    }
+
+    return result;
+}
+
+int Dax::disconnect(void) {
+    return dax_disconnect(ds);
 }

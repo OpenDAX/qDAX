@@ -16,28 +16,32 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
 
- *  Source code file for main window class
+ * Main source code file OpenDAX tag data model
  */
 
-#include "ui_mainwindow.h"
 #include "dax.h"
 #include "tagmodel.h"
 
-class MainWindow : public QMainWindow, public Ui_MainWindow
+
+TagModel::TagModel(Dax& d, QObject *parent) : QAbstractTableModel(parent), dax(d) {
+}
+
+int TagModel::rowCount(const QModelIndex & /*parent*/) const
 {
-    Q_OBJECT
+   return 2;
+}
 
-    private:
-        Dax& dax;
-        TagModel tagmodel;
+int TagModel::columnCount(const QModelIndex & /*parent*/) const
+{
+    return 3;
+}
 
-    public:
-        explicit MainWindow(Dax& d, QWidget *parent = nullptr);
-        ~MainWindow();
+QVariant TagModel::data(const QModelIndex &index, int role) const
+{
+    if (role == Qt::DisplayRole)
+       return QString("Row%1, Column%2")
+                   .arg(index.row())
+                   .arg(index.column());
 
-    public slots:
-        void connect(void);
-        void disconnect(void);
-
-};
-
+    return QVariant();
+}

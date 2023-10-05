@@ -22,14 +22,25 @@
 #include <QApplication>
 #include <QPushButton>
 #include "mainwindow.h"
+#include "dax.h"
 
-int main(int argc, char *argv[])
+
+int
+main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    dax_state *ds;
+    int retval;
 
+    QApplication app(argc, argv);
 
-    MainWindow mainwindow;
+    Dax dax("qdax");
+
+    dax.configure(argc, argv, CFG_CMDLINE);
+
+    MainWindow mainwindow(dax);
+
     mainwindow.show();
 
-    return a.exec(); // .exec starts QApplication and related GUI, this line starts 'event loop'
+    retval = app.exec(); // .exec starts QApplication and related GUI, this line starts 'event loop'
+    return retval;
 }

@@ -16,28 +16,26 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
 
- *  Source code file for main window class
+ * Header file OpenDAX library interface
  */
 
-#include "ui_mainwindow.h"
-#include "dax.h"
-#include "tagmodel.h"
+#ifndef DAX_H
+#define DAX_H
 
-class MainWindow : public QMainWindow, public Ui_MainWindow
+#include <opendax.h>
+
+
+class Dax
 {
-    Q_OBJECT
+    public:
+        Dax(const char *name);
+        ~Dax();
+        int configure(int argc, char **argv, int flags);
+        int connect(void);
+        int disconnect(void);
 
     private:
-        Dax& dax;
-        TagModel tagmodel;
-
-    public:
-        explicit MainWindow(Dax& d, QWidget *parent = nullptr);
-        ~MainWindow();
-
-    public slots:
-        void connect(void);
-        void disconnect(void);
-
+        dax_state *ds;
 };
 
+#endif

@@ -26,4 +26,10 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui)
 
+set(CMAKE_BUILD_TYPE Debug)
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+  message("Building Debug Symbols and Verbose Warnings")
+endif()
+
+
 add_subdirectory(src)
