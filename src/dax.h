@@ -33,8 +33,15 @@ class Dax
         int configure(int argc, char **argv, int flags);
         int connect(void);
         int disconnect(void);
-
+        bool isConnected(void);
+        int getTag(dax_tag *tag, char *name);
+        int getTag(dax_tag *tag, tag_index index);
+        int getHandle(tag_handle *h, char *str, int count = 1);
+        int read(tag_handle h, void *data);
+        int write(tag_handle h, void *data, void *mask = NULL);
+        std::string *typeString(tag_type type, int count = 1);
     private:
+        bool _connected;
         dax_state *ds;
 };
 

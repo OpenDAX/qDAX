@@ -46,6 +46,7 @@ int Dax::connect(void) {
         /* We don't mess with the run/stop/kill callbacks */
         dax_set_default_callbacks(ds);
         dax_set_status(ds, "OK");
+        _connected = true;
     } else {
         dax_log(LOG_ERROR, "dax_connect returned %d", result);
     }
@@ -55,4 +56,44 @@ int Dax::connect(void) {
 
 int Dax::disconnect(void) {
     return dax_disconnect(ds);
+}
+
+bool Dax::isConnected(void) {
+    return _connected;
+}
+
+int Dax::getTag(dax_tag *tag, char *name) {
+    return dax_tag_byname(ds, tag, name);
+}
+
+int Dax::getTag(dax_tag *tag, tag_index index) {
+    return dax_tag_byindex(ds, tag, index);
+}
+
+int Dax::getHandle(tag_handle *h, char *str, int count) {
+    return dax_tag_handle(ds, h, str, count);
+}
+
+int Dax::read(tag_handle h, void *data) {
+    return dax_tag_read(ds, h, data);
+}
+
+int Dax::write(tag_handle h, void *data, void *mask) {
+    if(mask == NULL) {
+        return dax_tag_write(ds, h, data);
+    } else {
+        return dax_tag_mask(ds, h, data, mask);
+    }
+}
+
+std::string *Dax::typeString(tag_type type, int count) {
+    std::string *s;
+
+    s = new std::string(dax_type_to_string(ds, type));
+    if(count > 1) {
+        *s += "[";
+        *s += std::to_string(count);
+        *s += "]";
+    }
+    return s;
 }

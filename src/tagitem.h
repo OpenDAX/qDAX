@@ -16,42 +16,39 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
 
- *  Source code file for main window class
+ * Header file OpenDAX tag model item class
  */
 
-#include "mainwindow.h"
+#ifndef TAGITEM_H
+#define TAGITEM_H
+
+#include <QAbstractItemModel>
+#include <QModelIndex>
+#include <QVariant>
 #include "dax.h"
-#include "tagmodel.h"
 
-MainWindow::MainWindow(Dax& d, QWidget *parent) : QMainWindow(parent), dax(d), tagmodel(d) {
-    setupUi(this);
-    treeView->setModel(&tagmodel);
-    actionConnect->trigger();
+class TagItem
+{
+public:
+    explicit TagItem(const char *name, const char *type, const char *value, TagItem *parentItem = nullptr);
+    ~TagItem();
 
-}
+    void appendChild(TagItem *child);
 
-MainWindow::~MainWindow() {
-    disconnect();
-}
+    TagItem *child(int row);
+    int childCount() const;
+    int columnCount() const;
+    QVariant data(int column) const;
+    int row() const;
+    TagItem *parentItem();
+    void clearChildren(void);
 
+private:
+    QList<TagItem *> _childItems;
+    QString _name;
+    QString _type;
+    QString _value;
+    TagItem *_parentItem;
+};
 
-void
-MainWindow::connect(void) {
-    if( dax.connect() == ERR_OK ) {
-        dax_log(LOG_DEBUG, "Connected");
-        actionDisconnect->setDisabled(false);
-        actionConnect->setDisabled(true);
-        tagmodel.init();
-    }
-}
-
-
-void
-MainWindow::disconnect(void) {
-    actionConnect->setDisabled(false);
-    actionDisconnect->setDisabled(true);
-
-    dax.disconnect();
-    tagmodel.clear();
-    dax_log(LOG_DEBUG, "Disconnected");
-}
+#endif

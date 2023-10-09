@@ -19,11 +19,11 @@ For more information see the website at https://opendax.org
 Installation
 --------------
 
-sudo apt install qt6-base-dev
+| sudo apt install qt6-base-dev
 
-mkdir build
-cd build
-cmake ..
-make
-make test
-make install
+| mkdir build
+| cd build
+| cmake ..
+| make
+| make test
+| make install

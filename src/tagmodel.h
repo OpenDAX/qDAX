@@ -22,23 +22,35 @@
 #ifndef TAGMODEL_H
 #define TAGMODEL_H
 
-#include <QAbstractTableModel>
+#include <QAbstractItemModel>
+#include <QModelIndex>
+#include <QVariant>
 #include "dax.h"
+#include "tagitem.h"
 
-
-class TagModel : public QAbstractTableModel
+class TagModel : public QAbstractItemModel
 {
     Q_OBJECT
 
-    public:
-        explicit TagModel(Dax& d, QObject *parent = nullptr);
+public:
+    explicit TagModel(Dax& d, QObject *parent = nullptr);
+    ~TagModel();
 
-        int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-        int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-        QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role = Qt::DisplayRole) const override;
+    QModelIndex index(int row, int column,
+                      const QModelIndex &parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex &index) const override;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    void init(void);
+    void clear(void);
 
-    private:
-        Dax& dax;
+private:
+    Dax& dax;
+    TagItem *rootItem;
 };
 
 
