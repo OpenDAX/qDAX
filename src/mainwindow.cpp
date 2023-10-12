@@ -21,13 +21,14 @@
 
 #include "mainwindow.h"
 #include "dax.h"
-#include "tagmodel.h"
 
-MainWindow::MainWindow(Dax& d, QWidget *parent) : QMainWindow(parent), dax(d), tagmodel(d) {
+MainWindow::MainWindow(Dax& d, QWidget *parent) : QMainWindow(parent), dax(d) {
     setupUi(this);
-    treeView->setModel(&tagmodel);
+    _taglist = new TagList(d);
+    treeWidget->setColumnCount(3);
+    _taglist->setTreeWidget(treeWidget);
     actionConnect->trigger();
-
+    treeWidget->setHeaderLabels(QStringList({"Tagname", "Type", "Value"}));
 }
 
 MainWindow::~MainWindow() {
@@ -41,7 +42,7 @@ MainWindow::connect(void) {
         dax_log(LOG_DEBUG, "Connected");
         actionDisconnect->setDisabled(false);
         actionConnect->setDisabled(true);
-        tagmodel.init();
+        _taglist->connect();
     }
 }
 
@@ -50,8 +51,8 @@ void
 MainWindow::disconnect(void) {
     actionConnect->setDisabled(false);
     actionDisconnect->setDisabled(true);
-
     dax.disconnect();
-    tagmodel.clear();
+    _taglist->disconnect();
     dax_log(LOG_DEBUG, "Disconnected");
 }
+

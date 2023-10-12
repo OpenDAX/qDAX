@@ -16,39 +16,39 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
 
- * Header file OpenDAX tag model item class
+ *  Header file for tag list
  */
 
-#ifndef TAGITEM_H
-#define TAGITEM_H
+#ifndef TAGLIST_H
+#define TAGLIST_H
 
-#include <QAbstractItemModel>
-#include <QModelIndex>
-#include <QVariant>
+#include <QObject>
+#include <QTreeWidget>
 #include "dax.h"
 
-class TagItem
+struct TagItem
 {
-public:
-    explicit TagItem(const char *name, const char *type, const char *value, TagItem *parentItem = nullptr);
-    ~TagItem();
+    QString *name;
+    tag_handle h;
+    QTreeWidgetItem *treeitem;
+    void *data;
+};
 
-    void appendChild(TagItem *child);
+class TagList : public QObject
+{
+    Q_OBJECT
 
-    TagItem *child(int row);
-    int childCount() const;
-    int columnCount() const;
-    QVariant data(int column) const;
-    int row() const;
-    TagItem *parentItem();
-    void clearChildren(void);
+    private:
+        Dax& dax;
+        QTreeWidget *tree;
+        QList<TagItem *> taglist;
+    public:
+        explicit TagList(Dax& d);
+        void setTreeWidget(QTreeWidget *tw);
+        void connect(void);
+        void disconnect(void);
+        void addTag(dax_tag tag);
 
-private:
-    QList<TagItem *> _childItems;
-    QString _name;
-    QString _type;
-    QString _value;
-    TagItem *_parentItem;
 };
 
 #endif

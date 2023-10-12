@@ -42,7 +42,7 @@ int Dax::connect(void) {
     int result =  dax_connect(ds);
     if(result == ERR_OK) {
        /* No setup work to do here.  We'll go straight to running */
-       dax_set_running(ds, 1);
+        dax_set_running(ds, 1);
         /* We don't mess with the run/stop/kill callbacks */
         dax_set_default_callbacks(ds);
         dax_set_status(ds, "OK");

@@ -21,7 +21,8 @@
 
 #include "ui_mainwindow.h"
 #include "dax.h"
-#include "tagmodel.h"
+#include "tagList.h"
+
 
 class MainWindow : public QMainWindow, public Ui_MainWindow
 {
@@ -29,7 +30,7 @@ class MainWindow : public QMainWindow, public Ui_MainWindow
 
     private:
         Dax& dax;
-        TagModel tagmodel;
+        TagList *_taglist;
 
     public:
         explicit MainWindow(Dax& d, QWidget *parent = nullptr);
@@ -38,6 +39,5 @@ class MainWindow : public QMainWindow, public Ui_MainWindow
     public slots:
         void connect(void);
         void disconnect(void);
-
 };
 
