@@ -21,23 +21,20 @@
 
 #include "ui_mainwindow.h"
 #include "dax.h"
-#include "tagList.h"
+#include "tagitem.h"
 
 
 class MainWindow : public QMainWindow, public Ui_MainWindow
 {
     Q_OBJECT
 
-    private:
-        Dax& dax;
-        TagList *_taglist;
-
     public:
-        explicit MainWindow(Dax& d, QWidget *parent = nullptr);
+        explicit MainWindow(QWidget *parent = nullptr);
         ~MainWindow();
 
     public slots:
         void connect(void);
         void disconnect(void);
+        void addTag(dax_tag tag);
 };
 

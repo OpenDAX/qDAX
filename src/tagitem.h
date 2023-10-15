@@ -16,7 +16,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
 
- *  Header file for tag list
+ *  Header file for tag item
  */
 
 #ifndef TAGLIST_H
@@ -26,29 +26,26 @@
 #include <QTreeWidget>
 #include "dax.h"
 
-struct TagItem
-{
-    QString *name;
-    tag_handle h;
-    QTreeWidgetItem *treeitem;
-    void *data;
-};
+#define NAME_COLUMN 0
+#define TYPE_COLUMN 1
+#define VALUE_COLUMN 2
 
-class TagList : public QObject
-{
-    Q_OBJECT
 
+class TagItem : public QTreeWidgetItem
+{
     private:
-        Dax& dax;
-        QTreeWidget *tree;
-        QList<TagItem *> taglist;
+        tag_handle h;
+        void *data;
+
     public:
-        explicit TagList(Dax& d);
-        void setTreeWidget(QTreeWidget *tw);
-        void connect(void);
-        void disconnect(void);
-        void addTag(dax_tag tag);
+        QString *name;
+
+        TagItem(QTreeWidget *parent, dax_tag tag);
+        ~TagItem();
+        void addArrayItem(QTreeWidgetItem *item, char * name, tag_type type, int index);
+        void addCDTItems(QTreeWidgetItem *item, char * name, tag_type type);
 
 };
+
 
 #endif

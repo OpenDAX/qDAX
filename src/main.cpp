@@ -24,6 +24,7 @@
 #include "mainwindow.h"
 #include "dax.h"
 
+Dax dax("qdax");
 
 int
 main(int argc, char *argv[])
@@ -33,11 +34,9 @@ main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
-    Dax dax("qdax");
-
     dax.configure(argc, argv, CFG_CMDLINE);
 
-    MainWindow mainwindow(dax);
+    MainWindow mainwindow;
 
     mainwindow.show();
 

@@ -22,11 +22,12 @@
 #include "mainwindow.h"
 #include "dax.h"
 
-MainWindow::MainWindow(Dax& d, QWidget *parent) : QMainWindow(parent), dax(d) {
+extern Dax dax;
+
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setupUi(this);
-    _taglist = new TagList(d);
     treeWidget->setColumnCount(3);
-    _taglist->setTreeWidget(treeWidget);
+    treeWidget->header()->resizeSection(0,200); // Something to save in QSettings
     actionConnect->trigger();
     treeWidget->setHeaderLabels(QStringList({"Tagname", "Type", "Value"}));
 }
@@ -38,11 +39,29 @@ MainWindow::~MainWindow() {
 
 void
 MainWindow::connect(void) {
+    int result;
+    dax_tag tag;
+    tag_index lastindex;
+    tag_handle h;
+
     if( dax.connect() == ERR_OK ) {
         dax_log(LOG_DEBUG, "Connected");
         actionDisconnect->setDisabled(false);
         actionConnect->setDisabled(true);
-        _taglist->connect();
+        result = dax.getHandle(&h, (char *)"_lastindex");
+        // TODO deal with error here
+        result = dax.read(h, &lastindex);
+        // TODO deal with error here
+        for(tag_index n = 0; n<=lastindex; n++) {
+            result = dax.getTag(&tag, n);
+            if(result == ERR_OK) {
+                addTag(tag);
+            }
+        }
+
+        statusbar->showMessage("Connected");
+    } else {
+        statusbar->showMessage("Failed to Connect");
     }
 }
 
@@ -52,7 +71,18 @@ MainWindow::disconnect(void) {
     actionConnect->setDisabled(false);
     actionDisconnect->setDisabled(true);
     dax.disconnect();
-    _taglist->disconnect();
     dax_log(LOG_DEBUG, "Disconnected");
+    statusbar->showMessage("Disconnected");
+    treeWidget->clear();
 }
 
+
+
+void
+MainWindow::addTag(dax_tag tag)
+{
+    TagItem *item;
+
+    item = new TagItem(static_cast<QTreeWidget *>(nullptr), tag);
+    treeWidget->addTopLevelItem(item);
+}

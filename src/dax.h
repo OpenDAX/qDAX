@@ -23,6 +23,7 @@
 #define DAX_H
 
 #include <opendax.h>
+#include <vector>
 
 
 class Dax
@@ -40,6 +41,8 @@ class Dax
         int read(tag_handle h, void *data);
         int write(tag_handle h, void *data, void *mask = NULL);
         std::string *typeString(tag_type type, int count = 1);
+        bool isCustom(tag_type type);
+        std::vector<cdt_iter> getTypeMembers(tag_type type);
     private:
         bool _connected;
         dax_state *ds;

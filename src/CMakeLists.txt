@@ -17,7 +17,7 @@
 qt_add_executable(qdax
      main.cpp
      dax.cpp
-     tagList.cpp
+     tagitem.cpp
      mainwindow.ui
      mainwindow.cpp
 )

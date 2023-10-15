@@ -86,6 +86,9 @@ int Dax::write(tag_handle h, void *data, void *mask) {
     }
 }
 
+/* Returns a string that represents the given data type.
+   If count > 1 then it will add the array index brackets
+   to the end of the string. */
 std::string *Dax::typeString(tag_type type, int count) {
     std::string *s;
 
@@ -96,4 +99,24 @@ std::string *Dax::typeString(tag_type type, int count) {
         *s += "]";
     }
     return s;
+}
+
+/* Determine of the given type is a custom (compound) data type */
+bool Dax::isCustom(tag_type type) {
+    if(IS_CUSTOM(type)) return true;
+    else                return false;
+}
+
+static void
+_cdt_iter_callback(cdt_iter member, void *udata) {
+    std::vector<cdt_iter> *members = (std::vector<cdt_iter> *)udata;
+    members->push_back(member);
+}
+
+std::vector<cdt_iter>
+Dax::getTypeMembers(tag_type type) {
+    std::vector<cdt_iter> members;
+
+    dax_cdt_iter(ds, type, &members, _cdt_iter_callback);
+    return members;
 }
