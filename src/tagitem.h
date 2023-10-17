@@ -30,6 +30,17 @@
 #define TYPE_COLUMN 1
 #define VALUE_COLUMN 2
 
+class TagLeafItem : public QTreeWidgetItem
+{
+    private:
+        tag_handle h;
+
+    public:
+        TagLeafItem(QTreeWidgetItem *parent, QString tagname, QString typestr);
+        void updateValues(void *data);
+
+};
+
 
 class TagItem : public QTreeWidgetItem
 {
@@ -43,9 +54,10 @@ class TagItem : public QTreeWidgetItem
         TagItem(QTreeWidget *parent, dax_tag tag);
         ~TagItem();
         void addArrayItem(QTreeWidgetItem *item, char * name, tag_type type, int index);
-        void addCDTItems(QTreeWidgetItem *item, char * name, tag_type type);
+        void addCDTItems(QTreeWidgetItem *item, QString name, tag_type type);
         tag_handle handle(void) { return h; };
         void *getData(void) { return _data; };
+        void updateValues(void);
 
 };
 

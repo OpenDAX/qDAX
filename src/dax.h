@@ -24,6 +24,7 @@
 
 #include <opendax.h>
 #include <vector>
+#include <string>
 
 
 class Dax
@@ -44,7 +45,7 @@ class Dax
         bool isConnected(void);
         int getTag(dax_tag *tag, char *name);
         int getTag(dax_tag *tag, tag_index index);
-        int getHandle(tag_handle *h, char *str, int count = 1);
+        int getHandle(tag_handle *h, char *str, int count = 0);
         int read(tag_handle h, void *data);
         int write(tag_handle h, void *data, void *mask = NULL);
         std::string *typeString(tag_type type, int count = 1);
@@ -57,6 +58,7 @@ class Dax
         int eventWait(int timeout, dax_id *id);
         int eventPoll(dax_id *id);
         int eventGetData(void *buff, int len);
+        std::string valueString(tag_type type, void *val, int index);
 
 };
 

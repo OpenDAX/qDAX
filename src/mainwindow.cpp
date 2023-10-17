@@ -19,7 +19,6 @@
  *  Source code file for main window class
  */
 
-#include <iostream>
 #include "mainwindow.h"
 #include "dax.h"
 
@@ -29,8 +28,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setupUi(this);
     treeWidget->setColumnCount(3);
     treeWidget->header()->resizeSection(0,200); // Something to save in QSettings
-    actionConnect->trigger();
     treeWidget->setHeaderLabels(QStringList({"Tagname", "Type", "Value"}));
+    tagTimer = new QTimer(this);
+    QObject::connect(tagTimer, &QTimer::timeout, this, &MainWindow::updateTags);
+    /* Set Tag Tree update buttons */
+    toolButtonPlay->setDefaultAction(actionStart_Update);
+    toolButtonStop->setDefaultAction(actionStop_Update);
+    toolButtonRefresh->setDefaultAction(actionTag_Refresh);
+    QObject::connect(actionStart_Update, &QAction::triggered, this, &MainWindow::startTagUpdate);
+    QObject::connect(actionStop_Update, &QAction::triggered, this, &MainWindow::stopTagUpdate);
+    QObject::connect(actionTag_Refresh, &QAction::triggered, this, &MainWindow::updateTags);
+    actionStart_Update->setEnabled(false);
+    actionStop_Update->setEnabled(false);
+    actionTag_Refresh->setEnabled(false);
+    actionConnect->trigger(); /* Try to connect */
+    QObject::connect(spinBoxInterval, &QSpinBox::valueChanged, this, &MainWindow::updateTime);
 }
 
 MainWindow::~MainWindow() {
@@ -55,12 +67,16 @@ MainWindow::connect(void) {
         for(tag_index n = 0; n<=lastindex; n++) {
             addTag(n);
         }
+        updateTags();
+
         eventworker.moveToThread(&eventThread);
         QObject::connect(this, &MainWindow::operate, &eventworker, &EventWorker::go);
         QObject::connect(&eventworker, &EventWorker::tagAdded, this, &MainWindow::addTag);
         QObject::connect(&eventworker, &EventWorker::tagDeleted, this, &MainWindow::delTag);
         eventThread.start();
         emit operate();
+        actionStart_Update->setEnabled(true);
+        actionTag_Refresh->setEnabled(true);
         statusbar->showMessage("Connected");
     } else {
         statusbar->showMessage("Failed to Connect");
@@ -79,6 +95,10 @@ MainWindow::disconnect(void) {
     eventworker.quit();
     eventThread.quit();
     eventThread.wait(2000);
+    stopTagUpdate();
+    actionStart_Update->setEnabled(false);
+    actionStop_Update->setEnabled(false);
+    actionTag_Refresh->setEnabled(false);
 }
 
 
@@ -113,3 +133,37 @@ MainWindow::delTag(tag_index idx) {
     }
 }
 
+void
+MainWindow::startTagUpdate(void) {
+    actionStart_Update->setEnabled(false);
+    actionStop_Update->setEnabled(true);
+    actionTag_Refresh->setEnabled(false);
+    tagTimer->start(spinBoxInterval->value());
+}
+
+void
+MainWindow::stopTagUpdate(void) {
+    actionStart_Update->setEnabled(true);
+    actionStop_Update->setEnabled(false);
+    actionTag_Refresh->setEnabled(true);
+    tagTimer->stop();
+}
+
+
+void
+MainWindow::updateTags(void) {
+    TagItem *item;
+    int result;
+
+    for(int n=0; n < treeWidget->topLevelItemCount(); n++) {
+        item = (TagItem *)treeWidget->topLevelItem(n);
+        result = dax.read(item->handle(), item->getData());
+        item->updateValues();
+    }
+
+}
+
+void
+MainWindow::updateTime(int msec) {
+    tagTimer->setInterval(msec);
+}

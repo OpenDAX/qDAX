@@ -139,8 +139,9 @@
     </property>
     <addaction name="actionAdd_Tag"/>
     <addaction name="actionAdd_Type"/>
-    <addaction name="actionAdd_Event"/>
     <addaction name="actionAdd_Map"/>
+    <addaction name="separator"/>
+    <addaction name="action_About"/>
    </widget>
    <addaction name="menuConnect"/>
    <addaction name="menuTools"/>
@@ -169,11 +170,6 @@
     <string>Add &amp;Map</string>
    </property>
   </action>
-  <action name="actionAdd_Event">
-   <property name="text">
-    <string>Add &amp;Event</string>
-   </property>
-  </action>
   <action name="actionDisconnect">
    <property name="enabled">
     <bool>false</bool>
@@ -185,6 +181,32 @@
   <action name="actionExit">
    <property name="text">
     <string>E&amp;xit</string>
+   </property>
+  </action>
+  <action name="actionStart_Update">
+   <property name="text">
+    <string>Start</string>
+   </property>
+   <property name="toolTip">
+    <string>Start Tag Update</string>
+   </property>
+  </action>
+  <action name="actionStop_Update">
+   <property name="text">
+    <string>Stop</string>
+   </property>
+   <property name="toolTip">
+    <string>Stop Tag Update</string>
+   </property>
+  </action>
+  <action name="actionTag_Refresh">
+   <property name="text">
+    <string>Refresh</string>
+   </property>
+  </action>
+  <action name="action_About">
+   <property name="text">
+    <string>&amp;About</string>
    </property>
   </action>
  </widget>

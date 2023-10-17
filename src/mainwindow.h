@@ -21,6 +21,7 @@
 
 #include "ui_mainwindow.h"
 #include <QThread>
+#include <QTimer>
 #include "dax.h"
 #include "tagitem.h"
 #include "eventworker.h"
@@ -33,6 +34,7 @@ class MainWindow : public QMainWindow, public Ui_MainWindow
     private:
         QThread eventThread;
         EventWorker eventworker;
+        QTimer *tagTimer;
 
     public:
         explicit MainWindow(QWidget *parent = nullptr);
@@ -43,6 +45,10 @@ class MainWindow : public QMainWindow, public Ui_MainWindow
         void disconnect(void);
         void addTag(tag_index idx);
         void delTag(tag_index idx);
+        void startTagUpdate(void);
+        void stopTagUpdate(void);
+        void updateTags(void);
+        void updateTime(int msec);
 
     signals:
         void operate(void);

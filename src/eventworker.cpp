@@ -19,7 +19,6 @@
  *  Source code file for the event worker thread class
  */
 
-#include <iostream>
 #include "eventworker.h"
 
 extern Dax dax;
@@ -28,7 +27,8 @@ EventWorker::EventWorker() {
     _quit = false;
 }
 
-void EventWorker::_addTagCallback(Dax *d, void *udata) {
+void
+EventWorker::_addTagCallback(Dax *d, void *udata) {
     tag_index idx;
     int result;
 
@@ -36,10 +36,11 @@ void EventWorker::_addTagCallback(Dax *d, void *udata) {
     if(result >= 0) {
         emit ((EventWorker *)udata)->tagAdded(idx);
     }
-    //std::cout << "Tag Added " << idx << std::endl;
 }
 
-void EventWorker::_delTagCallback(Dax *d, void *udata) {
+
+void
+EventWorker::_delTagCallback(Dax *d, void *udata) {
     tag_index idx;
     int result;
 
@@ -47,11 +48,11 @@ void EventWorker::_delTagCallback(Dax *d, void *udata) {
     if(result >= 0) {
         emit ((EventWorker *)udata)->tagDeleted(idx);
     }
-    //std::cout << "Tag Deleted " << idx << std::endl;
 }
 
 
-void EventWorker::go(void) {
+void
+EventWorker::go(void) {
     tag_handle h;
     dax_id id;
     int result;
@@ -69,7 +70,8 @@ void EventWorker::go(void) {
 
 }
 
-void EventWorker::quit(void) {
+void
+EventWorker::quit(void) {
     _quit = true;
 }
 
