@@ -19,41 +19,28 @@
  *  Source code file for main window class
  */
 
-#include "ui_mainwindow.h"
-#include <QThread>
-#include <QTimer>
+#ifndef _ABOUT_DIALOG_H
+#define _ABOUT_DIALOG_H
+
+#include "ui_aboutdialog.h"
 #include "dax.h"
-#include "tagitem.h"
-#include "eventworker.h"
-#include "aboutdialog.h"
 
 
-class MainWindow : public QMainWindow, public Ui_MainWindow
+class AboutDialog : public QDialog, public Ui_AboutDialog
 {
     Q_OBJECT
 
     private:
-        QThread eventThread;
-        EventWorker eventworker;
-        QTimer *tagTimer;
-        AboutDialog *dialog;
 
     public:
-        explicit MainWindow(QWidget *parent = nullptr);
-        ~MainWindow();
+        explicit AboutDialog(QWidget *parent = nullptr);
+        ~AboutDialog();
 
     public slots:
-        void connect(void);
-        void disconnect(void);
-        void addTag(tag_index idx);
-        void delTag(tag_index idx);
-        void startTagUpdate(void);
-        void stopTagUpdate(void);
-        void updateTags(void);
-        void updateTime(int msec);
-        void aboutDialog(void);
+
 
     signals:
-        void operate(void);
+
 };
 
+#endif

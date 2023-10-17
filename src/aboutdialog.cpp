@@ -19,41 +19,32 @@
  *  Source code file for main window class
  */
 
-#include "ui_mainwindow.h"
-#include <QThread>
-#include <QTimer>
-#include "dax.h"
-#include "tagitem.h"
-#include "eventworker.h"
 #include "aboutdialog.h"
+#include "dax.h"
+#include <config.h>
 
+extern Dax dax;
 
-class MainWindow : public QMainWindow, public Ui_MainWindow
-{
-    Q_OBJECT
+AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent) {
+    setupUi(this);
+    textEdit->setReadOnly(true);
+    QString html("<p><b>qDax</b></p>\n");
+    html += "<p>Version: ";
+    html += VERSION;
+    html += "</p>\n";
+    html += "<p>Compiled: ";
+    html += __DATE__;
+    html += " - ";
+    html += __TIME__;
+    html += "</p>\n";
+    html += "<p>Copyright (c) 2023 Phil Birkelbach<br>\n";
+    html += "Licensed under the GPL v2.0</p>\n";
 
-    private:
-        QThread eventThread;
-        EventWorker eventworker;
-        QTimer *tagTimer;
-        AboutDialog *dialog;
+    textEdit->setHtml(html);
+}
 
-    public:
-        explicit MainWindow(QWidget *parent = nullptr);
-        ~MainWindow();
+AboutDialog::~AboutDialog() {
+    ;
+}
 
-    public slots:
-        void connect(void);
-        void disconnect(void);
-        void addTag(tag_index idx);
-        void delTag(tag_index idx);
-        void startTagUpdate(void);
-        void stopTagUpdate(void);
-        void updateTags(void);
-        void updateTime(int msec);
-        void aboutDialog(void);
-
-    signals:
-        void operate(void);
-};
 

@@ -26,9 +26,13 @@ extern Dax dax;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setupUi(this);
+    /* GUI Setup */
+    dialog = new AboutDialog(this);
+    QObject::connect(action_About, &QAction::triggered, dialog, &QDialog::open);
     treeWidget->setColumnCount(3);
     treeWidget->header()->resizeSection(0,200); // Something to save in QSettings
     treeWidget->setHeaderLabels(QStringList({"Tagname", "Type", "Value"}));
+    /* Tag Update Timer Object */
     tagTimer = new QTimer(this);
     QObject::connect(tagTimer, &QTimer::timeout, this, &MainWindow::updateTags);
     /* Set Tag Tree update buttons */
@@ -43,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     actionTag_Refresh->setEnabled(false);
     actionConnect->trigger(); /* Try to connect */
     QObject::connect(spinBoxInterval, &QSpinBox::valueChanged, this, &MainWindow::updateTime);
+
 }
 
 MainWindow::~MainWindow() {
@@ -166,4 +171,10 @@ MainWindow::updateTags(void) {
 void
 MainWindow::updateTime(int msec) {
     tagTimer->setInterval(msec);
+}
+
+void
+MainWindow::aboutDialog(void) {
+
+    dialog->open();
 }

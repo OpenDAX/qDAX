@@ -31,5 +31,6 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
   message("Building Debug Symbols and Verbose Warnings")
 endif()
 
+include_directories(${PROJECT_BINARY_DIR}/src)
 
 add_subdirectory(src)
