@@ -28,6 +28,13 @@
 
 class Dax
 {
+    private:
+        bool _connected;
+        dax_state *ds;
+
+        static void _event_callback(dax_state *ds, void *udata);
+        static void _free_callback(void *udata);
+
     public:
         Dax(const char *name);
         ~Dax();
@@ -43,9 +50,22 @@ class Dax
         std::string *typeString(tag_type type, int count = 1);
         bool isCustom(tag_type type);
         std::vector<cdt_iter> getTypeMembers(tag_type type);
-    private:
-        bool _connected;
-        dax_state *ds;
+        int eventAdd(tag_handle *handle, int event_type, void *data, dax_id *id,
+                     void (*callback)(Dax *dax, void *udata), void *udata,
+                     void (*free_callback)(void *udata));
+        int eventOptions(dax_id id, uint32_t options);
+        int eventWait(int timeout, dax_id *id);
+        int eventPoll(dax_id *id);
+        int eventGetData(void *buff, int len);
+
 };
+
+struct EventUdata {
+    void (*callback)(Dax *dax, void *udata);
+    void (*free_callback)(void *udata);
+    void *udata;
+    Dax *dax;
+};
+
 
 #endif

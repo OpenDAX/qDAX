@@ -120,3 +120,60 @@ Dax::getTypeMembers(tag_type type) {
     dax_cdt_iter(ds, type, &members, _cdt_iter_callback);
     return members;
 }
+
+/* The following two functions are static member functions that serve as
+   proxies for the user defined callbacks.  The information needed to use
+   thse callbacks is stored in the EventUdata structure that is passed as
+   the udata here. The ds is ignored. */
+void
+Dax::_event_callback(dax_state *ds, void *udata) {
+    EventUdata *ud = (EventUdata *)udata;
+    ud->callback(ud->dax, ud->udata);
+}
+
+void
+Dax::_free_callback(void *udata) {
+    EventUdata *ud = (EventUdata *)udata;
+    if(ud->free_callback != NULL) {
+        ud->free_callback(ud->udata);
+    }
+    delete (EventUdata *)udata; /* Simply delete our EventData structure */
+}
+
+/* To add an event we store both C callbacks, the userdata and our own pointer into
+   an EventUdata structure.  Then we set our own static member callbacks as the actual
+   function pointers to libdax.  When we receive the udata pointer back from libdax in
+   our callbacks we just call the functions that were stored with the stored data */
+int
+Dax::eventAdd(tag_handle *handle, int event_type, void *data, dax_id *id, void (*callback)(Dax *dax, void *udata), void *udata, void (*free_callback)(void *udata)) {
+    EventUdata *ud = new EventUdata;
+    ud->callback = callback;
+    ud->free_callback = free_callback;
+    ud->udata = udata;
+    ud->dax = this;
+    return dax_event_add(ds, handle, event_type, data, id, _event_callback, ud, _free_callback);
+}
+
+int
+Dax::eventOptions(dax_id id, uint32_t options) {
+    return dax_event_options(ds, id, options);
+}
+
+int
+Dax::eventWait(int timeout, dax_id *id) {
+    return dax_event_wait(ds, timeout, id);
+}
+
+
+int
+Dax::eventPoll(dax_id *id) {
+    return dax_event_poll(ds, id);
+}
+
+
+int
+Dax::eventGetData(void *buff, int len) {
+    return dax_event_get_data(ds, buff, len);
+}
+
+

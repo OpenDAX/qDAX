@@ -35,7 +35,7 @@ class TagItem : public QTreeWidgetItem
 {
     private:
         tag_handle h;
-        void *data;
+        void *_data;
 
     public:
         QString *name;
@@ -44,6 +44,8 @@ class TagItem : public QTreeWidgetItem
         ~TagItem();
         void addArrayItem(QTreeWidgetItem *item, char * name, tag_type type, int index);
         void addCDTItems(QTreeWidgetItem *item, char * name, tag_type type);
+        tag_handle handle(void) { return h; };
+        void *getData(void) { return _data; };
 
 };
 

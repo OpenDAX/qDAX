@@ -16,35 +16,38 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
 
- *  Source code file for main window class
+ *  Header file for event worker thread class
  */
 
-#include "ui_mainwindow.h"
-#include <QThread>
+#ifndef EVENTWORKER_H
+#define EVENTWORKER_H
+
+#include <QObject>
 #include "dax.h"
-#include "tagitem.h"
-#include "eventworker.h"
 
-
-class MainWindow : public QMainWindow, public Ui_MainWindow
+class EventWorker : public QObject
 {
     Q_OBJECT
 
     private:
-        QThread eventThread;
-        EventWorker eventworker;
+        dax_id _tag_added_event_id;
+        dax_id _tag_deleted_event_id;
+        bool _quit;
 
-    public:
-        explicit MainWindow(QWidget *parent = nullptr);
-        ~MainWindow();
+        static void _addTagCallback(Dax *dax, void *udata);
+        static void _delTagCallback(Dax *dax, void *udata);
 
     public slots:
-        void connect(void);
-        void disconnect(void);
-        void addTag(tag_index idx);
-        void delTag(tag_index idx);
+        void go(void);
+        void quit(void);
+
 
     signals:
-        void operate(void);
+        void tagAdded(tag_index tag);
+        void tagDeleted(tag_index tag);
+
+    public:
+        EventWorker();
 };
 
+#endif

@@ -18,6 +18,7 @@ qt_add_executable(qdax
      main.cpp
      dax.cpp
      tagitem.cpp
+     eventworker.cpp
      mainwindow.ui
      mainwindow.cpp
 )

@@ -33,8 +33,12 @@ TagItem::TagItem(QTreeWidget *parent, dax_tag tag) : QTreeWidgetItem(parent)
     setData(NAME_COLUMN, Qt::DisplayRole, tag.name);
     setData(TYPE_COLUMN, Qt::DisplayRole, dax.typeString(tag.type, tag.count)->c_str());
 
-    dax.getHandle(&h, tag.name);
-    data = malloc(h.size);
+    int result = dax.getHandle(&h, tag.name);
+    //std::cout << "Added tag with index " << h.index << std::endl;
+    if(result) {
+        dax_log(LOG_ERROR, "Unable to get tag handle ");
+    }
+    _data = malloc(h.size);
 
     if(tag.count > 1) {
         typestr = dax.typeString(tag.type)->c_str();
@@ -50,8 +54,8 @@ TagItem::TagItem(QTreeWidget *parent, dax_tag tag) : QTreeWidgetItem(parent)
 
 TagItem::~TagItem()
 {
-    if(data != NULL) {
-        free(data);
+    if(_data != NULL) {
+        free(_data);
     }
 }
 
@@ -60,7 +64,6 @@ TagItem::addArrayItem(QTreeWidgetItem *item, char * name, tag_type type, int ind
     QString typestr;
     QString tagname;
     QTreeWidgetItem *child;
-
 
     typestr = dax.typeString(type)->c_str();
     tagname = QString(name) + "[" + QString::number(index) + "]";

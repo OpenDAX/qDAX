@@ -19,6 +19,7 @@
  *  Source code file for main window class
  */
 
+#include <iostream>
 #include "mainwindow.h"
 #include "dax.h"
 
@@ -39,10 +40,9 @@ MainWindow::~MainWindow() {
 
 void
 MainWindow::connect(void) {
-    int result;
-    dax_tag tag;
     tag_index lastindex;
     tag_handle h;
+    int result;
 
     if( dax.connect() == ERR_OK ) {
         dax_log(LOG_DEBUG, "Connected");
@@ -53,12 +53,14 @@ MainWindow::connect(void) {
         result = dax.read(h, &lastindex);
         // TODO deal with error here
         for(tag_index n = 0; n<=lastindex; n++) {
-            result = dax.getTag(&tag, n);
-            if(result == ERR_OK) {
-                addTag(tag);
-            }
+            addTag(n);
         }
-
+        eventworker.moveToThread(&eventThread);
+        QObject::connect(this, &MainWindow::operate, &eventworker, &EventWorker::go);
+        QObject::connect(&eventworker, &EventWorker::tagAdded, this, &MainWindow::addTag);
+        QObject::connect(&eventworker, &EventWorker::tagDeleted, this, &MainWindow::delTag);
+        eventThread.start();
+        emit operate();
         statusbar->showMessage("Connected");
     } else {
         statusbar->showMessage("Failed to Connect");
@@ -74,15 +76,40 @@ MainWindow::disconnect(void) {
     dax_log(LOG_DEBUG, "Disconnected");
     statusbar->showMessage("Disconnected");
     treeWidget->clear();
+    eventworker.quit();
+    eventThread.quit();
+    eventThread.wait(2000);
 }
-
 
 
 void
-MainWindow::addTag(dax_tag tag)
-{
+MainWindow::addTag(tag_index idx) {
     TagItem *item;
+    int result;
+    dax_tag tag;
 
-    item = new TagItem(static_cast<QTreeWidget *>(nullptr), tag);
-    treeWidget->addTopLevelItem(item);
+    result = dax.getTag(&tag, idx);
+    if(result == ERR_OK) {
+        item = new TagItem(static_cast<QTreeWidget *>(nullptr), tag);
+        treeWidget->addTopLevelItem(item);
+    }
 }
+
+
+void
+MainWindow::delTag(tag_index idx) {
+    TagItem *item;
+    int n;
+
+    for(n=0; n < treeWidget->topLevelItemCount(); n++) {
+        item = (TagItem *)treeWidget->topLevelItem(n);
+        if(item->handle().index == idx) {
+            /* Reading from the deleted tag should clear it from the cache */
+            dax.read(item->handle(), item->getData());
+            /* This removes it */
+            treeWidget->takeTopLevelItem(n);
+            return;
+        }
+    }
+}
+
