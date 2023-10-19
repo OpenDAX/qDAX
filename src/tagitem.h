@@ -16,7 +16,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
 
- *  Header file for tag item
+ *  Header file for tag item classes that represent the items in the tag Tree
  */
 
 #ifndef TAGLIST_H
@@ -30,11 +30,29 @@
 #define TYPE_COLUMN 1
 #define VALUE_COLUMN 2
 
-class TagLeafItem : public QTreeWidgetItem
+#define ITEM_TYPE_ROOT 1001
+#define ITEM_TYPE_LEAF 1002
+
+class TagBaseItem : public QTreeWidgetItem
 {
-    private:
+    protected:
         tag_handle h;
 
+    public:
+        bool writable = true;
+        bool readonly = false;
+
+        TagBaseItem(QTreeWidget *parent, int type);
+        TagBaseItem(QTreeWidgetItem *parent, int type);
+
+        tag_handle handle(void) { return h; };
+        //bool writeable(void) { return _writable; };
+        //void setWritable(bool w) { _writable = w; };
+};
+
+
+class TagLeafItem : public TagBaseItem
+{
     public:
         TagLeafItem(QTreeWidgetItem *parent, QString tagname, QString typestr);
         void updateValues(void *data);
@@ -42,23 +60,18 @@ class TagLeafItem : public QTreeWidgetItem
 };
 
 
-class TagItem : public QTreeWidgetItem
+class TagRootItem : public TagBaseItem
 {
     private:
-        tag_handle h;
         void *_data;
 
     public:
-        QString *name;
-
-        TagItem(QTreeWidget *parent, dax_tag tag);
-        ~TagItem();
+        TagRootItem(QTreeWidget *parent, dax_tag tag);
+        ~TagRootItem();
         void addArrayItem(QTreeWidgetItem *item, char * name, tag_type type, int index);
         void addCDTItems(QTreeWidgetItem *item, QString name, tag_type type);
-        tag_handle handle(void) { return h; };
         void *getData(void) { return _data; };
         void updateValues(void);
-
 };
 
 

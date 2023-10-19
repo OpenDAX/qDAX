@@ -59,6 +59,7 @@ class Dax
         int eventPoll(dax_id *id);
         int eventGetData(void *buff, int len);
         std::string valueString(tag_type type, void *val, int index);
+        int value(std::string str, tag_type type, void *val, int index);
 
 };
 

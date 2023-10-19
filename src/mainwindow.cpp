@@ -19,6 +19,7 @@
  *  Source code file for main window class
  */
 
+#include <iostream>
 #include "mainwindow.h"
 #include "dax.h"
 
@@ -32,6 +33,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     treeWidget->setColumnCount(3);
     treeWidget->header()->resizeSection(0,200); // Something to save in QSettings
     treeWidget->setHeaderLabels(QStringList({"Tagname", "Type", "Value"}));
+    treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    QObject::connect(treeWidget, &QTreeWidget::customContextMenuRequested,
+                     this, &MainWindow::treeContextMenu);
+    QObject::connect(treeWidget, &QTreeWidget::itemActivated,
+                     this, &MainWindow::treeItemActivate);
+    lineEditTree->setVisible(false);
+    QObject::connect(lineEditTree, &QLineEdit::returnPressed, this, &MainWindow::editAccept);
+    toolButtonAccept->setVisible(false);
+    toolButtonAccept->setDefaultAction(actionAccept);
+    QObject::connect(actionAccept, &QAction::triggered, this, &MainWindow::editAccept);
     /* Tag Update Timer Object */
     tagTimer = new QTimer(this);
     QObject::connect(tagTimer, &QTimer::timeout, this, &MainWindow::updateTags);
@@ -109,13 +120,13 @@ MainWindow::disconnect(void) {
 
 void
 MainWindow::addTag(tag_index idx) {
-    TagItem *item;
+    TagRootItem *item;
     int result;
     dax_tag tag;
 
     result = dax.getTag(&tag, idx);
     if(result == ERR_OK) {
-        item = new TagItem(static_cast<QTreeWidget *>(nullptr), tag);
+        item = new TagRootItem(static_cast<QTreeWidget *>(nullptr), tag);
         treeWidget->addTopLevelItem(item);
     }
 }
@@ -123,11 +134,11 @@ MainWindow::addTag(tag_index idx) {
 
 void
 MainWindow::delTag(tag_index idx) {
-    TagItem *item;
+    TagRootItem *item;
     int n;
 
     for(n=0; n < treeWidget->topLevelItemCount(); n++) {
-        item = (TagItem *)treeWidget->topLevelItem(n);
+        item = (TagRootItem *)treeWidget->topLevelItem(n);
         if(item->handle().index == idx) {
             /* Reading from the deleted tag should clear it from the cache */
             dax.read(item->handle(), item->getData());
@@ -157,11 +168,11 @@ MainWindow::stopTagUpdate(void) {
 
 void
 MainWindow::updateTags(void) {
-    TagItem *item;
+    TagRootItem *item;
     int result;
 
     for(int n=0; n < treeWidget->topLevelItemCount(); n++) {
-        item = (TagItem *)treeWidget->topLevelItem(n);
+        item = (TagRootItem *)treeWidget->topLevelItem(n);
         result = dax.read(item->handle(), item->getData());
         item->updateValues();
     }
@@ -177,4 +188,71 @@ void
 MainWindow::aboutDialog(void) {
 
     dialog->open();
+}
+
+void
+MainWindow::treeContextMenu(const QPoint& pos) {
+    TagBaseItem *item;
+    QList<QTreeWidgetItem *> items;
+    items = treeWidget->selectedItems();
+    QString str = items[0]->data(0, Qt::DisplayRole).toString();
+
+    std::cout << "Context Menu for " << str.toStdString() << std::endl;
+}
+
+/* This activates the edit box at the top of the tag view tab*/
+void
+MainWindow::treeItemActivate(QTreeWidgetItem *item, int column) {
+    TagBaseItem *tagitem = (TagBaseItem *)item;
+    tag_handle h;
+    void *data;
+
+    if(tagitem->writable && !tagitem->readonly) {
+        h = tagitem->handle();
+
+        if(h.count > 1 || dax.isCustom(h.type)) return; // Need to deal with CHAR[] at some point
+
+        data = malloc(h.size);
+        int result = dax.read(h, data);
+        if(result) { free(data); return; } // Probably should indicate this error
+        lineEditTree->setText(QString(dax.valueString(h.type, data, 0).c_str()));
+        free(data);
+        lineEditTree->selectAll();
+        lineEditTree->setVisible(true);
+        lineEditTree->setFocus(Qt::OtherFocusReason);
+        toolButtonAccept->setVisible(true);
+    } else {
+        lineEditTree->setVisible(false);
+        toolButtonAccept->setVisible(false);
+    }
+}
+
+void
+MainWindow::editAccept(void) {
+    TagBaseItem *item;
+    tag_handle h;
+    void *data;
+    int result;
+    QString str;
+
+    item = (TagBaseItem *)treeWidget->currentItem();
+    lineEditTree->setVisible(false);
+    toolButtonAccept->setVisible(false);
+    treeWidget->setFocus(Qt::OtherFocusReason);
+
+    h = item->handle();
+    data = malloc(h.size);
+    dax.value(lineEditTree->text().toStdString(), h.type, data, 0);
+    result = dax.write(h, data, NULL); /* Write the data to the server */
+    if(result) { free(data); return; } // Probably should indicate this error
+    result = dax.read(h, data); /* Read it back to make sure */
+    if(result) { free(data); return; } // Probably should indicate this error
+    if(h.type == DAX_BOOL) {
+        if( ((char *)data)[0] ) str = "true";
+        else                    str = "false";
+    } else {
+        str = dax.valueString(h.type, data, 0).c_str();
+    }
+    item->setData(VALUE_COLUMN, Qt::DisplayRole, str);
+    free(data);
 }

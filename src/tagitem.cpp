@@ -19,11 +19,21 @@
  *  Source code file for tag item
  */
 
+#include <iostream>
 #include "tagitem.h"
 
 extern Dax dax;
 
-TagLeafItem::TagLeafItem(QTreeWidgetItem *parent, QString tagname, QString typestr) : QTreeWidgetItem(parent) {
+TagBaseItem::TagBaseItem(QTreeWidget *parent, int type) : QTreeWidgetItem(parent, type) {
+}
+
+TagBaseItem::TagBaseItem(QTreeWidgetItem *parent, int type) : QTreeWidgetItem(parent, type) {
+}
+
+
+
+
+TagLeafItem::TagLeafItem(QTreeWidgetItem *parent, QString tagname, QString typestr) : TagBaseItem(parent, ITEM_TYPE_LEAF) {
     setData(NAME_COLUMN, Qt::DisplayRole, tagname);
     setData(TYPE_COLUMN, Qt::DisplayRole, typestr);
 
@@ -31,6 +41,7 @@ TagLeafItem::TagLeafItem(QTreeWidgetItem *parent, QString tagname, QString types
     if(result) {
         dax_log(LOG_ERROR, "Unable to get tag handle ");
     }
+    //std::cout << tagname.toStdString() << " byte = " << h.byte << std::endl;
 }
 
 
@@ -70,7 +81,7 @@ TagLeafItem::updateValues(void *data) {
 }
 
 
-TagItem::TagItem(QTreeWidget *parent, dax_tag tag) : QTreeWidgetItem(parent)
+TagRootItem::TagRootItem(QTreeWidget *parent, dax_tag tag) : TagBaseItem(parent, ITEM_TYPE_ROOT)
 {
     QString typestr;
     QString tagname;
@@ -82,22 +93,25 @@ TagItem::TagItem(QTreeWidget *parent, dax_tag tag) : QTreeWidgetItem(parent)
     if(result) {
         dax_log(LOG_ERROR, "Unable to get tag handle ");
     }
+    if(tag.attr & TAG_ATTR_READONLY) readonly = true;
     _data = malloc(h.size);
 
     if(tag.count > 1) {
+        if(tag.type != DAX_CHAR) writable = false;
         typestr = dax.typeString(tag.type)->c_str();
         for(int i=0;i<tag.count;i++) {
             addArrayItem(this, tag.name, tag.type, i);
         }
     } else {
         if(dax.isCustom(tag.type)) {
+            writable = false;
             addCDTItems(this, tag.name, tag.type);
         }
     }
 }
 
 
-TagItem::~TagItem()
+TagRootItem::~TagRootItem()
 {
     if(_data != NULL) {
         free(_data);
@@ -106,14 +120,15 @@ TagItem::~TagItem()
 
 
 void
-TagItem::addArrayItem(QTreeWidgetItem *item, char * name, tag_type type, int index) {
+TagRootItem::addArrayItem(QTreeWidgetItem *item, char * name, tag_type type, int index) {
     QString typestr;
     QString tagname;
-    QTreeWidgetItem *child;
+    TagLeafItem *child;
 
     typestr = dax.typeString(type)->c_str();
     tagname = QString(name) + "[" + QString::number(index) + "]";
     child = new TagLeafItem(item, tagname, typestr);
+    if(readonly) child->readonly = true;
     item->addChild(child);
     if(dax.isCustom(type)) {
         addCDTItems(child, tagname, type);
@@ -122,17 +137,17 @@ TagItem::addArrayItem(QTreeWidgetItem *item, char * name, tag_type type, int ind
 
 
 void
-TagItem::addCDTItems(QTreeWidgetItem *item, QString name, tag_type type) {
+TagRootItem::addCDTItems(QTreeWidgetItem *item, QString name, tag_type type) {
     QString typestr;
     QString tagname;
-    QTreeWidgetItem *child;
+    TagLeafItem *child;
 
     std::vector<cdt_iter> members = dax.getTypeMembers(type);
     for(auto m : members) {
         typestr = dax.typeString(m.type, m.count)->c_str();
         tagname = QString(name) + "." + QString(m.name);
         child = new TagLeafItem(item, tagname, QString(typestr));
-
+        if(readonly) child->readonly = true;
         item->addChild(child);
 
         if(m.count > 1) {
@@ -146,7 +161,7 @@ TagItem::addCDTItems(QTreeWidgetItem *item, QString name, tag_type type) {
 
 
 void
-TagItem::updateValues(void) {
+TagRootItem::updateValues(void) {
     std::string valstr;
     TagLeafItem *item;
 
@@ -176,7 +191,5 @@ TagItem::updateValues(void) {
             valstr = dax.valueString(h.type, &((char *)_data)[h.byte], 0);
         }
         setData(VALUE_COLUMN, Qt::DisplayRole, QString(valstr.c_str()));
-        //valstr = dax.valueString(h.type, _data, 0);
-        //setData(VALUE_COLUMN, Qt::DisplayRole, QString(valstr.c_str()));
     }
 }

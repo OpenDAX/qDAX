@@ -214,4 +214,8 @@ Dax::valueString(tag_type type, void *val, int index) {
     return std::string(buff);
 }
 
+int
+Dax::value(std::string str, tag_type type, void *val, int index) {
+    return dax_string_to_val((char *)str.c_str(), type, val, NULL, index);
+}
 

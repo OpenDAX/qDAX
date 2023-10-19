@@ -52,6 +52,9 @@ class MainWindow : public QMainWindow, public Ui_MainWindow
         void updateTags(void);
         void updateTime(int msec);
         void aboutDialog(void);
+        void treeContextMenu(const QPoint& pos);
+        void treeItemActivate(QTreeWidgetItem *item, int column);
+        void editAccept(void);
 
     signals:
         void operate(void);
