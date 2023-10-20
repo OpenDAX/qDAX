@@ -26,6 +26,10 @@
 #include <vector>
 #include <string>
 
+struct type_id {
+    std::string name;
+    tag_type type;
+};
 
 class Dax
 {
@@ -43,6 +47,9 @@ class Dax
         int connect(void);
         int disconnect(void);
         bool isConnected(void);
+        int tagAdd(tag_handle *h, std::string name, tag_type type, uint32_t count, uint32_t attr=0x00);
+        int tagDel(tag_index index);
+        int tagDel(std::string name);
         int getTag(dax_tag *tag, char *name);
         int getTag(dax_tag *tag, tag_index index);
         int getHandle(tag_handle *h, char *str, int count = 0);
@@ -51,6 +58,7 @@ class Dax
         std::string *typeString(tag_type type, int count = 1);
         bool isCustom(tag_type type);
         std::vector<cdt_iter> getTypeMembers(tag_type type);
+        std::vector<type_id> getTypes(void);
         int eventAdd(tag_handle *handle, int event_type, void *data, dax_id *id,
                      void (*callback)(Dax *dax, void *udata), void *udata,
                      void (*free_callback)(void *udata));

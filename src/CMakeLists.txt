@@ -23,6 +23,8 @@ qt_add_executable(qdax
      eventworker.cpp
      mainwindow.ui
      mainwindow.cpp
+     addtagdialog.ui
+     addtagdialog.cpp
      aboutdialog.ui
      aboutdialog.cpp
 )

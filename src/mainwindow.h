@@ -26,6 +26,8 @@
 #include "tagitem.h"
 #include "eventworker.h"
 #include "aboutdialog.h"
+#include "addtagdialog.h"
+
 
 
 class MainWindow : public QMainWindow, public Ui_MainWindow
@@ -36,7 +38,7 @@ class MainWindow : public QMainWindow, public Ui_MainWindow
         QThread eventThread;
         EventWorker eventworker;
         QTimer *tagTimer;
-        AboutDialog *dialog;
+        AboutDialog *_aboutDialog;
 
     public:
         explicit MainWindow(QWidget *parent = nullptr);
@@ -45,16 +47,20 @@ class MainWindow : public QMainWindow, public Ui_MainWindow
     public slots:
         void connect(void);
         void disconnect(void);
-        void addTag(tag_index idx);
-        void delTag(tag_index idx);
+        void addTagToTree(tag_index idx);
+        void delTagFromTree(tag_index idx);
         void startTagUpdate(void);
         void stopTagUpdate(void);
         void updateTags(void);
         void updateTime(int msec);
         void aboutDialog(void);
         void treeContextMenu(const QPoint& pos);
+        void treeItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
         void treeItemActivate(QTreeWidgetItem *item, int column);
         void editAccept(void);
+        void addTag(void);
+        void deleteTag(void);
+        void addToWatchlist(void);
 
     signals:
         void operate(void);

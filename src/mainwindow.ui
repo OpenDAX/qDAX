@@ -20,9 +20,9 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="tabMain">
+      <widget class="QWidget" name="tabTag">
        <attribute name="title">
-        <string>Main</string>
+        <string>Tags</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
@@ -167,17 +167,17 @@
   </action>
   <action name="actionAdd_Tag">
    <property name="text">
-    <string>Add &amp;Tag</string>
+    <string>Add &amp;Tag...</string>
    </property>
   </action>
   <action name="actionAdd_Type">
    <property name="text">
-    <string>Add T&amp;ype</string>
+    <string>Add T&amp;ype...</string>
    </property>
   </action>
   <action name="actionAdd_Map">
    <property name="text">
-    <string>Add &amp;Map</string>
+    <string>Add &amp;Map...</string>
    </property>
   </action>
   <action name="actionDisconnect">
@@ -225,6 +225,24 @@
    </property>
    <property name="toolTip">
     <string>Write Value to Tag Server</string>
+   </property>
+  </action>
+  <action name="actionDelete_Tag">
+   <property name="text">
+    <string>&amp;Delete Tag...</string>
+   </property>
+  </action>
+  <action name="actionAdd_To_Watchlist">
+   <property name="text">
+    <string>Add Tag to Watchlist</string>
+   </property>
+   <property name="toolTip">
+    <string>Add to Watchlist</string>
+   </property>
+  </action>
+  <action name="actionTag_Info">
+   <property name="text">
+    <string>Tag Info</string>
    </property>
   </action>
  </widget>

@@ -69,6 +69,26 @@ Dax::isConnected(void) {
     return _connected;
 }
 
+int
+Dax::tagAdd(tag_handle *h, std::string name, tag_type type, uint32_t count, uint32_t attr) {
+    return dax_tag_add(ds, h, (char *)name.c_str(), type, count, attr);
+}
+
+int
+Dax::tagDel(tag_index index) {
+    return dax_tag_del(ds, index);
+}
+
+int
+Dax::tagDel(std::string name) {
+    dax_tag tag;
+    int result;
+
+    result = dax_tag_byname(ds, &tag, (char *)name.c_str());
+    if(result) return result;
+    return dax_tag_del(ds, tag.idx);
+}
+
 
 int
 Dax::getTag(dax_tag *tag, char *name) {
@@ -130,7 +150,7 @@ Dax::isCustom(tag_type type) {
 
 
 static void
-_cdt_iter_callback(cdt_iter member, void *udata) {
+_cdt_member_callback(cdt_iter member, void *udata) {
     std::vector<cdt_iter> *members = (std::vector<cdt_iter> *)udata;
     members->push_back(member);
 }
@@ -140,8 +160,42 @@ std::vector<cdt_iter>
 Dax::getTypeMembers(tag_type type) {
     std::vector<cdt_iter> members;
 
-    dax_cdt_iter(ds, type, &members, _cdt_iter_callback);
+    dax_cdt_iter(ds, type, &members, _cdt_member_callback);
     return members;
+}
+
+static void
+_cdt_callback(cdt_iter member, void *udata) {
+    std::vector<type_id> *types = (std::vector<type_id> *)udata;
+    type_id type;
+
+    type.name = member.name;
+    type.type = member.type;
+    types->push_back(type);
+}
+
+std::vector<type_id>
+Dax::getTypes(void) {
+    std::vector<type_id> types;
+    types.push_back({"BOOL",  DAX_BOOL});
+    types.push_back({"BYTE",  DAX_BYTE});
+    types.push_back({"SINT",  DAX_SINT});
+    types.push_back({"CHAR",  DAX_CHAR});
+    types.push_back({"WORD",  DAX_WORD});
+    types.push_back({"INT",   DAX_INT});
+    types.push_back({"UINT",  DAX_UINT});
+    types.push_back({"DWORD", DAX_DWORD});
+    types.push_back({"DINT",  DAX_DINT});
+    types.push_back({"UDINT", DAX_UDINT});
+    types.push_back({"TIME",  DAX_TIME});
+    types.push_back({"REAL",  DAX_REAL});
+    types.push_back({"LWORD", DAX_LWORD});
+    types.push_back({"LINT",  DAX_LINT});
+    types.push_back({"ULINT", DAX_ULINT});
+    types.push_back({"LREAL", DAX_LREAL});
+
+    dax_cdt_iter(ds, 0, &types, _cdt_callback);
+    return types;
 }
 
 

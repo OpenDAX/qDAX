@@ -19,34 +19,28 @@
  *  Source code file for the about dialog box
  */
 
-#include "aboutdialog.h"
+#ifndef _ADD_TAG_DIALOG_H
+#define _ADD_TAG_DIALOG_H
+
+#include "ui_addtagdialog.h"
 #include "dax.h"
-#include <config.h>
-
-extern Dax dax;
-
-AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent) {
-    setupUi(this);
-    textEdit->setReadOnly(true);
-    QString html("<p><b>qDax</b></p>\n");
-    html += "<p>qDax is a graphical front end for the OpenDAX Tag Server</p>\n";
-    html += "<p>Version: ";
-    html += VERSION;
-    html += "</p>\n";
-    html += "<p>Compiled: ";
-    html += __DATE__;
-    html += " - ";
-    html += __TIME__;
-    html += "</p>\n";
-    html += "<p>Copyright (c) 2023 Phil Birkelbach<br>\n";
-    html += "Licensed under the GPL v2.0</p>\n";
-    html += "<p>Created using Qt</p>\n";
-
-    textEdit->setHtml(html);
-}
-
-AboutDialog::~AboutDialog() {
-    ;
-}
 
 
+class AddTagDialog : public QDialog, public Ui_AddTagDialog
+{
+    Q_OBJECT
+
+    private:
+
+    public:
+        explicit AddTagDialog(QWidget *parent = nullptr);
+        ~AddTagDialog();
+
+    public slots:
+
+
+    signals:
+
+};
+
+#endif

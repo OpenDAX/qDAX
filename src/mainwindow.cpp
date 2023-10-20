@@ -28,8 +28,8 @@ extern Dax dax;
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setupUi(this);
     /* GUI Setup */
-    dialog = new AboutDialog(this);
-    QObject::connect(action_About, &QAction::triggered, dialog, &QDialog::open);
+    _aboutDialog = new AboutDialog(this);
+    QObject::connect(action_About, &QAction::triggered, _aboutDialog, &QDialog::open);
     treeWidget->setColumnCount(3);
     treeWidget->header()->resizeSection(0,200); // Something to save in QSettings
     treeWidget->setHeaderLabels(QStringList({"Tagname", "Type", "Value"}));
@@ -38,11 +38,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
                      this, &MainWindow::treeContextMenu);
     QObject::connect(treeWidget, &QTreeWidget::itemActivated,
                      this, &MainWindow::treeItemActivate);
+    QObject::connect(treeWidget, &QTreeWidget::currentItemChanged,
+                    this, &MainWindow::treeItemChanged);
     lineEditTree->setVisible(false);
     QObject::connect(lineEditTree, &QLineEdit::returnPressed, this, &MainWindow::editAccept);
     toolButtonAccept->setVisible(false);
     toolButtonAccept->setDefaultAction(actionAccept);
     QObject::connect(actionAccept, &QAction::triggered, this, &MainWindow::editAccept);
+    QObject::connect(actionAdd_Tag, &QAction::triggered, this, &MainWindow::addTag);
+    QObject::connect(actionDelete_Tag, &QAction::triggered, this, &MainWindow::deleteTag);
+    QObject::connect(actionAdd_To_Watchlist, &QAction::triggered, this, &MainWindow::addToWatchlist);
     /* Tag Update Timer Object */
     tagTimer = new QTimer(this);
     QObject::connect(tagTimer, &QTimer::timeout, this, &MainWindow::updateTags);
@@ -56,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     actionStart_Update->setEnabled(false);
     actionStop_Update->setEnabled(false);
     actionTag_Refresh->setEnabled(false);
+    actionAdd_To_Watchlist->setEnabled(false);
     actionConnect->trigger(); /* Try to connect */
     QObject::connect(spinBoxInterval, &QSpinBox::valueChanged, this, &MainWindow::updateTime);
 
@@ -81,14 +87,14 @@ MainWindow::connect(void) {
         result = dax.read(h, &lastindex);
         // TODO deal with error here
         for(tag_index n = 0; n<=lastindex; n++) {
-            addTag(n);
+            addTagToTree(n);
         }
         updateTags();
 
         eventworker.moveToThread(&eventThread);
         QObject::connect(this, &MainWindow::operate, &eventworker, &EventWorker::go);
-        QObject::connect(&eventworker, &EventWorker::tagAdded, this, &MainWindow::addTag);
-        QObject::connect(&eventworker, &EventWorker::tagDeleted, this, &MainWindow::delTag);
+        QObject::connect(&eventworker, &EventWorker::tagAdded, this, &MainWindow::addTagToTree);
+        QObject::connect(&eventworker, &EventWorker::tagDeleted, this, &MainWindow::delTagFromTree);
         eventThread.start();
         emit operate();
         actionStart_Update->setEnabled(true);
@@ -119,7 +125,7 @@ MainWindow::disconnect(void) {
 
 
 void
-MainWindow::addTag(tag_index idx) {
+MainWindow::addTagToTree(tag_index idx) {
     TagRootItem *item;
     int result;
     dax_tag tag;
@@ -133,7 +139,7 @@ MainWindow::addTag(tag_index idx) {
 
 
 void
-MainWindow::delTag(tag_index idx) {
+MainWindow::delTagFromTree(tag_index idx) {
     TagRootItem *item;
     int n;
 
@@ -187,17 +193,27 @@ MainWindow::updateTime(int msec) {
 void
 MainWindow::aboutDialog(void) {
 
-    dialog->open();
+    _aboutDialog->open();
 }
 
 void
 MainWindow::treeContextMenu(const QPoint& pos) {
     TagBaseItem *item;
     QList<QTreeWidgetItem *> items;
-    items = treeWidget->selectedItems();
-    QString str = items[0]->data(0, Qt::DisplayRole).toString();
+    QMenu menu;
 
-    std::cout << "Context Menu for " << str.toStdString() << std::endl;
+    items = treeWidget->selectedItems();
+    if(items.size() > 0) {
+        item = (TagBaseItem *)items[0];
+        QString str = items[0]->data(0, Qt::DisplayRole).toString();
+
+        std::cout << "Context Menu for " << str.toStdString() << std::endl;
+        menu.addAction(actionDelete_Tag);
+        menu.addAction(actionAdd_To_Watchlist);
+        menu.addSeparator();
+        menu.addAction(actionTag_Info);
+        menu.exec(treeWidget->mapToGlobal(pos));
+    }
 }
 
 /* This activates the edit box at the top of the tag view tab*/
@@ -227,6 +243,18 @@ MainWindow::treeItemActivate(QTreeWidgetItem *item, int column) {
     }
 }
 
+/* This gets called any time we changed the selected item in the tree.  It's
+   mainly for updating actions depending on what is selected */
+void
+MainWindow::treeItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous) {
+    TagBaseItem *item = (TagBaseItem *)current;
+    if(item) {
+        if(item->writable) actionAdd_To_Watchlist->setEnabled(true);
+        else actionAdd_To_Watchlist->setEnabled(false);
+    }
+}
+
+
 void
 MainWindow::editAccept(void) {
     TagBaseItem *item;
@@ -255,4 +283,57 @@ MainWindow::editAccept(void) {
     }
     item->setData(VALUE_COLUMN, Qt::DisplayRole, str);
     free(data);
+}
+
+void
+MainWindow::addTag(void) {
+    AddTagDialog d(this);
+    std::vector<type_id> types;
+    std::string tagname;
+    tag_type tagType;
+    uint32_t count;
+    int result;
+
+    types = dax.getTypes();
+    for(type_id type : types) {
+        d.comboBoxType->addItem(QString(type.name.c_str()), type.type);
+    }
+    d.lineEditName->setFocus(Qt::OtherFocusReason);
+    result = d.exec();
+    if(result == QDialog::Accepted) {
+        tagname = d.lineEditName->text().toStdString();
+        tagType = (tag_type)d.comboBoxType->currentData().toInt();
+        count = d.spinBoxCount->value();
+        std::cout << "Add Tag " << tagname << " " << tagType << " " << count << std::endl;
+        result = dax.tagAdd(NULL, tagname, tagType, count);
+        if(result == ERR_OK) {
+            statusbar->showMessage("Tag Added");
+        } else {
+            // TODO: This should be a message box
+            statusbar->showMessage("Failed to Add Tag");
+        }
+    }
+}
+
+void
+MainWindow::deleteTag(void) {
+    TagBaseItem *item;
+
+    if(tabWidget->currentIndex() == 0) {
+        item = (TagBaseItem *)treeWidget->currentItem();
+        /* This loop takes us back to the root tag item */
+        while(item->type() == ITEM_TYPE_LEAF) item = (TagBaseItem *)item->parent();
+        QString tagname = item->data(0, Qt::DisplayRole).toString();
+
+        std::cout << "Delete Tag " << tagname.toStdString() << std::endl;
+    } else if(tabWidget->currentIndex() == 1) {
+        std::cout << "Find on Watch tab" << std::endl;
+    } else {
+        std::cout << "Oops" << std::endl;
+    }
+}
+
+void
+MainWindow::addToWatchlist(void) {
+    std::cout << "Watch Tag" << std::endl;
 }

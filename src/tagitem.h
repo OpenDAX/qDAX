@@ -46,8 +46,6 @@ class TagBaseItem : public QTreeWidgetItem
         TagBaseItem(QTreeWidgetItem *parent, int type);
 
         tag_handle handle(void) { return h; };
-        //bool writeable(void) { return _writable; };
-        //void setWritable(bool w) { _writable = w; };
 };
 
 
