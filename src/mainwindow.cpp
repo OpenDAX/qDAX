@@ -22,6 +22,7 @@
 #include <iostream>
 #include "mainwindow.h"
 #include "dax.h"
+#include <QMessageBox>
 
 extern Dax dax;
 
@@ -47,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QObject::connect(actionAccept, &QAction::triggered, this, &MainWindow::editAccept);
     QObject::connect(actionAdd_Tag, &QAction::triggered, this, &MainWindow::addTag);
     QObject::connect(actionDelete_Tag, &QAction::triggered, this, &MainWindow::deleteTag);
+    QObject::connect(actionAdd_Type, &QAction::triggered, this, &MainWindow::addType);
     QObject::connect(actionAdd_To_Watchlist, &QAction::triggered, this, &MainWindow::addToWatchlist);
     /* Tag Update Timer Object */
     tagTimer = new QTimer(this);
@@ -289,7 +291,7 @@ void
 MainWindow::addTag(void) {
     AddTagDialog d(this);
     std::vector<type_id> types;
-    std::string tagname;
+    std::string tagname, str;
     tag_type tagType;
     uint32_t count;
     int result;
@@ -304,10 +306,10 @@ MainWindow::addTag(void) {
         tagname = d.lineEditName->text().toStdString();
         tagType = (tag_type)d.comboBoxType->currentData().toInt();
         count = d.spinBoxCount->value();
-        std::cout << "Add Tag " << tagname << " " << tagType << " " << count << std::endl;
         result = dax.tagAdd(NULL, tagname, tagType, count);
         if(result == ERR_OK) {
-            statusbar->showMessage("Tag Added");
+            str = std::string("Tag '") + tagname + "' Added";
+            statusbar->showMessage(str.c_str());
         } else {
             // TODO: This should be a message box
             statusbar->showMessage("Failed to Add Tag");
@@ -318,19 +320,63 @@ MainWindow::addTag(void) {
 void
 MainWindow::deleteTag(void) {
     TagBaseItem *item;
+    QMessageBox msgBox(this);
+    tag_index idx;
+    int result;
 
     if(tabWidget->currentIndex() == 0) {
         item = (TagBaseItem *)treeWidget->currentItem();
         /* This loop takes us back to the root tag item */
         while(item->type() == ITEM_TYPE_LEAF) item = (TagBaseItem *)item->parent();
+        idx = item->handle().index;
         QString tagname = item->data(0, Qt::DisplayRole).toString();
-
-        std::cout << "Delete Tag " << tagname.toStdString() << std::endl;
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setText(QString("Are you sure you want to delete tag '" + tagname + "'?"));
+        msgBox.setWindowTitle(QString("Delete Tag"));
+        result = msgBox.exec();
+        if(result == QMessageBox::Yes) {
+            result = dax.tagDel(idx);
+            if(result == ERR_OK) {
+                statusbar->showMessage("Tag Deleted Successfully");
+            } else {
+                statusbar->showMessage("Error deleting tag");
+            }
+        }
     } else if(tabWidget->currentIndex() == 1) {
         std::cout << "Find on Watch tab" << std::endl;
     } else {
         std::cout << "Oops" << std::endl;
     }
+}
+
+void
+MainWindow::addType(void) {
+    int result;
+    AddTypeDialog d(this);
+    TypeItem *item;
+    std::vector<type_id> members;
+    type_id t;
+
+    result = d.exec();
+    // TODO: Need to do a bunch of checking here for bad names.
+    if(QDialog::Accepted) {
+        for(int i=0; i < d.treeWidget->topLevelItemCount(); i++) {
+            item = (TypeItem *)d.treeWidget->topLevelItem(i);
+            std::cout << item->name.toStdString();
+            t.name = item->name.toStdString();
+            t.type = item->type;
+            t.count = item->count;
+            members.push_back(t);
+        }
+        result = dax.typeAdd(d.lineEditName->text().toStdString(), members);
+        if(result == ERR_OK) {
+            statusbar->showMessage("Type Created");
+        } else {
+            // TODO: Better error message here
+            statusbar->showMessage("Failed to create type");
+        }
+    }
+
 }
 
 void

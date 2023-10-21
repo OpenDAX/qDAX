@@ -27,6 +27,7 @@
 #include "eventworker.h"
 #include "aboutdialog.h"
 #include "addtagdialog.h"
+#include "addtypedialog.h"
 
 
 
@@ -60,6 +61,7 @@ class MainWindow : public QMainWindow, public Ui_MainWindow
         void editAccept(void);
         void addTag(void);
         void deleteTag(void);
+        void addType(void);
         void addToWatchlist(void);
 
     signals:

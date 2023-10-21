@@ -21,6 +21,9 @@
 
 #include "dax.h"
 
+
+
+
 /* Dax Class Definitions */
 Dax::Dax(const char *name) {
     ds = dax_init(name);
@@ -146,6 +149,28 @@ bool
 Dax::isCustom(tag_type type) {
     if(IS_CUSTOM(type)) return true;
     else                return false;
+}
+
+int
+Dax::typeAdd(std::string name, std::vector<type_id> members, tag_type *type) {
+    dax_cdt *cdt;
+    int result;
+
+    cdt = dax_cdt_new((char *)name.c_str(), &result);
+
+    for(type_id member : members) {
+        result = dax_cdt_member(ds, cdt, (char *)member.name.c_str(), member.type, member.count);
+        if(result) {
+            dax_cdt_free(cdt);
+            return result;
+        }
+    }
+    result = dax_cdt_create(ds, cdt, type);
+    if(result) {
+        dax_cdt_free(cdt);
+        return result;
+    }
+    return ERR_OK;
 }
 
 

@@ -29,7 +29,9 @@
 struct type_id {
     std::string name;
     tag_type type;
+    uint32_t count;
 };
+
 
 class Dax
 {
@@ -57,6 +59,7 @@ class Dax
         int write(tag_handle h, void *data, void *mask = NULL);
         std::string *typeString(tag_type type, int count = 1);
         bool isCustom(tag_type type);
+        int typeAdd(std::string name, std::vector<type_id> members, tag_type *type = NULL);
         std::vector<cdt_iter> getTypeMembers(tag_type type);
         std::vector<type_id> getTypes(void);
         int eventAdd(tag_handle *handle, int event_type, void *data, dax_id *id,

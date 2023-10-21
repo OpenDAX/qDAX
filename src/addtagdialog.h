@@ -16,7 +16,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
 
- *  Source code file for the about dialog box
+ *  Header file for the tag add dialog box
  */
 
 #ifndef _ADD_TAG_DIALOG_H

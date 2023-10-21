@@ -16,20 +16,45 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
 
- *  Source code file for the add tag dialog box
+ *  Header file for the tag add dialog box
  */
 
-#include "addtagdialog.h"
+#ifndef _ADD_TYPE_DIALOG_H
+#define _ADD_TYPE_DIALOG_H
+
+#include "ui_addtypedialog.h"
 #include "dax.h"
-#include <config.h>
 
-extern Dax dax;
+class TypeItem : public QTreeWidgetItem
+{
+    protected:
 
-AddTagDialog::AddTagDialog(QWidget *parent) : QDialog(parent) {
-    setupUi(this);
+    public:
+        QString name, typestr;
+        tag_type type;
+        uint32_t count;
 
-}
+        TypeItem(QTreeWidget *parent, QString name, tag_type type, uint32_t count);
 
-AddTagDialog::~AddTagDialog() {
-    ;
-}
+};
+
+
+class AddTypeDialog : public QDialog, public Ui_AddTypeDialog
+{
+    Q_OBJECT
+
+    private:
+        void addMember(void);
+
+    public:
+        explicit AddTypeDialog(QWidget *parent = nullptr);
+        ~AddTypeDialog();
+
+    public slots:
+
+
+    signals:
+
+};
+
+#endif
