@@ -19,6 +19,7 @@
  *  Source code file for the event worker thread class
  */
 
+#include "qdax.h"
 #include "eventworker.h"
 
 extern Dax dax;
@@ -54,20 +55,22 @@ EventWorker::_delTagCallback(Dax *d, void *udata) {
 void
 EventWorker::go(void) {
     tag_handle h;
-    dax_id id;
+    dax_id add_id, del_id, id;
     int result;
 
     result = dax.getHandle(&h, (char *)"_tag_added");
-    result = dax.eventAdd(&h, EVENT_WRITE, NULL, &id, _addTagCallback, this, NULL);
-    result = dax.eventOptions(id, EVENT_OPT_SEND_DATA);
+    result = dax.eventAdd(&h, EVENT_WRITE, NULL, &add_id, _addTagCallback, this, NULL);
+    result = dax.eventOptions(add_id, EVENT_OPT_SEND_DATA);
     result = dax.getHandle(&h, (char *)"_tag_deleted");
-    result = dax.eventAdd(&h, EVENT_WRITE, NULL, &id, _delTagCallback, this, NULL);
-    result = dax.eventOptions(id, EVENT_OPT_SEND_DATA);
+    result = dax.eventAdd(&h, EVENT_WRITE, NULL, &del_id, _delTagCallback, this, NULL);
+    result = dax.eventOptions(del_id, EVENT_OPT_SEND_DATA);
 
     while(!_quit) {
-        result = dax.eventWait(1000, &id);
+        result = dax.eventWait(500, &id);
     }
-
+    dax.eventDelete(add_id);
+    dax.eventDelete(del_id);
+    _quit = false;
 }
 
 void

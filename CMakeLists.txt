@@ -30,6 +30,7 @@ set(CMAKE_BUILD_TYPE Debug)
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   message("Building Debug Symbols and Verbose Warnings")
 endif()
+set(CMAKE_CXX_FLAGS_DEBUG_INIT "-Wall")
 
 include_directories(${PROJECT_BINARY_DIR}/src)
 

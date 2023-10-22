@@ -71,6 +71,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 MainWindow::~MainWindow() {
     disconnect();
+
 }
 
 
@@ -92,12 +93,13 @@ MainWindow::connect(void) {
             addTagToTree(n);
         }
         updateTags();
-
-        eventworker.moveToThread(&eventThread);
-        QObject::connect(this, &MainWindow::operate, &eventworker, &EventWorker::go);
-        QObject::connect(&eventworker, &EventWorker::tagAdded, this, &MainWindow::addTagToTree);
-        QObject::connect(&eventworker, &EventWorker::tagDeleted, this, &MainWindow::delTagFromTree);
-        eventThread.start();
+        eventThread = new QThread();
+        eventworker = new EventWorker();
+        eventworker->moveToThread(eventThread);
+        QObject::connect(this, &MainWindow::operate, eventworker, &EventWorker::go);
+        QObject::connect(eventworker, &EventWorker::tagAdded, this, &MainWindow::addTagToTree);
+        QObject::connect(eventworker, &EventWorker::tagDeleted, this, &MainWindow::delTagFromTree);
+        eventThread->start();
         emit operate();
         actionStart_Update->setEnabled(true);
         actionTag_Refresh->setEnabled(true);
@@ -112,13 +114,15 @@ void
 MainWindow::disconnect(void) {
     actionConnect->setDisabled(false);
     actionDisconnect->setDisabled(true);
+    eventworker->quit();
+    eventThread->quit();
+    eventThread->wait(2000);
+    delete eventThread;
+    delete eventworker;
     dax.disconnect();
     dax_log(LOG_DEBUG, "Disconnected");
     statusbar->showMessage("Disconnected");
     treeWidget->clear();
-    eventworker.quit();
-    eventThread.quit();
-    eventThread.wait(2000);
     stopTagUpdate();
     actionStart_Update->setEnabled(false);
     actionStop_Update->setEnabled(false);

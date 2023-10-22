@@ -65,6 +65,7 @@ class Dax
         int eventAdd(tag_handle *handle, int event_type, void *data, dax_id *id,
                      void (*callback)(Dax *dax, void *udata), void *udata,
                      void (*free_callback)(void *udata));
+        int eventDelete(dax_id);
         int eventOptions(dax_id id, uint32_t options);
         int eventWait(int timeout, dax_id *id);
         int eventPoll(dax_id *id);

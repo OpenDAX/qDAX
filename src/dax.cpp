@@ -259,6 +259,10 @@ Dax::eventAdd(tag_handle *handle, int event_type, void *data, dax_id *id, void (
     return dax_event_add(ds, handle, event_type, data, id, _event_callback, ud, _free_callback);
 }
 
+int
+Dax::eventDelete(dax_id id) {
+    return dax_event_del(ds, id);
+}
 
 int
 Dax::eventOptions(dax_id id, uint32_t options) {

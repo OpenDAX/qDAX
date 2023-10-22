@@ -1,10 +1,13 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-
 #define VERSION_MAJOR @qdax_VERSION_MAJOR@
 #define VERSION_MINOR @qdax_VERSION_MINOR@
 #define VERSION_PATCH @qdax_VERSION_PATCH@
+
+#if CMAKE_BUILD_TYPE == Debug
+# define DEBUG 1
+#endif
 
 #define PACKAGE "qDax"
 #define VERSION "@qdax_VERSION_MAJOR@.@qdax_VERSION_MINOR@.@qdax_VERSION_PATCH@"

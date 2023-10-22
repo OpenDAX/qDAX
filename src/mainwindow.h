@@ -36,8 +36,8 @@ class MainWindow : public QMainWindow, public Ui_MainWindow
     Q_OBJECT
 
     private:
-        QThread eventThread;
-        EventWorker eventworker;
+        QThread *eventThread;
+        EventWorker *eventworker;
         QTimer *tagTimer;
         AboutDialog *_aboutDialog;
 
