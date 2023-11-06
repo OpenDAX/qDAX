@@ -120,6 +120,17 @@
        <attribute name="title">
         <string>Watch</string>
        </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QTreeWidget" name="treeWidgetWatch">
+          <column>
+           <property name="text">
+            <string notr="true">1</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
@@ -243,6 +254,11 @@
   <action name="actionTag_Info">
    <property name="text">
     <string>Tag Info</string>
+   </property>
+  </action>
+  <action name="actionDelete_From_Watchlist">
+   <property name="text">
+    <string>Delete Watch</string>
    </property>
   </action>
  </widget>

@@ -28,7 +28,7 @@
 Dax::Dax(const char *name) {
     ds = dax_init(name);
     if(ds == NULL) {
-        dax_log(LOG_ERROR, "Unable to Initialize DaxState Object");
+        dax_log(DAX_LOG_ERROR, "Unable to Initialize DaxState Object");
     }
 }
 
@@ -54,7 +54,7 @@ Dax::connect(void) {
         dax_set_status(ds, "OK");
         _connected = true;
     } else {
-        dax_log(LOG_ERROR, "dax_connect returned %d", result);
+        dax_log(DAX_LOG_ERROR, "dax_connect returned %d", result);
     }
 
     return result;

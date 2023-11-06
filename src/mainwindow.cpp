@@ -20,6 +20,7 @@
  */
 
 #include <iostream>
+#include "qdax.h"
 #include "mainwindow.h"
 #include "dax.h"
 #include <QMessageBox>
@@ -60,6 +61,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QObject::connect(actionStart_Update, &QAction::triggered, this, &MainWindow::startTagUpdate);
     QObject::connect(actionStop_Update, &QAction::triggered, this, &MainWindow::stopTagUpdate);
     QObject::connect(actionTag_Refresh, &QAction::triggered, this, &MainWindow::updateTags);
+
+    treeWidgetWatch->setColumnCount(2);
+    treeWidgetWatch->header()->resizeSection(0,200); // Something to save in QSettings
+    treeWidgetWatch->setHeaderLabels(QStringList({"Tagname", "Value"}));
+    treeWidgetWatch->setContextMenuPolicy(Qt::CustomContextMenu);
+    QObject::connect(treeWidgetWatch, &QTreeWidget::customContextMenuRequested,
+                     this, &MainWindow::treeWatchContextMenu);
+    QObject::connect(actionDelete_From_Watchlist, &QAction::triggered, this, &MainWindow::delFromWatchlist);
+
     actionStart_Update->setEnabled(false);
     actionStop_Update->setEnabled(false);
     actionTag_Refresh->setEnabled(false);
@@ -82,7 +92,7 @@ MainWindow::connect(void) {
     int result;
 
     if( dax.connect() == ERR_OK ) {
-        dax_log(LOG_DEBUG, "Connected");
+        dax_log(DAX_LOG_DEBUG, "Connected");
         actionDisconnect->setDisabled(false);
         actionConnect->setDisabled(true);
         result = dax.getHandle(&h, (char *)"_lastindex");
@@ -120,7 +130,7 @@ MainWindow::disconnect(void) {
     delete eventThread;
     delete eventworker;
     dax.disconnect();
-    dax_log(LOG_DEBUG, "Disconnected");
+    dax_log(DAX_LOG_DEBUG, "Disconnected");
     statusbar->showMessage("Disconnected");
     treeWidget->clear();
     stopTagUpdate();
@@ -156,6 +166,7 @@ MainWindow::delTagFromTree(tag_index idx) {
             dax.read(item->handle(), item->getData());
             /* This removes it */
             treeWidget->takeTopLevelItem(n);
+            delete item;
             return;
         }
     }
@@ -213,13 +224,32 @@ MainWindow::treeContextMenu(const QPoint& pos) {
         item = (TagBaseItem *)items[0];
         QString str = items[0]->data(0, Qt::DisplayRole).toString();
 
-        std::cout << "Context Menu for " << str.toStdString() << std::endl;
         menu.addAction(actionDelete_Tag);
         menu.addAction(actionAdd_To_Watchlist);
         menu.addSeparator();
         menu.addAction(actionTag_Info);
         menu.exec(treeWidget->mapToGlobal(pos));
     }
+}
+
+void
+MainWindow::treeWatchContextMenu(const QPoint& pos) {
+    WatchItem *item;
+    QList<QTreeWidgetItem *> items;
+    QMenu menu;
+
+    items = treeWidget->selectedItems();
+    if(items.size() > 0) {
+        item = (WatchItem *)items[0];
+        QString str = items[0]->data(0, Qt::DisplayRole).toString();
+
+        menu.addAction(actionDelete_From_Watchlist);
+        //menu.addAction(actionAdd_To_Watchlist);
+        menu.addSeparator();
+        //menu.addAction(actionTag_Info);
+        menu.exec(treeWidget->mapToGlobal(pos));
+    }
+
 }
 
 /* This activates the edit box at the top of the tag view tab*/
@@ -363,7 +393,7 @@ MainWindow::addType(void) {
 
     result = d.exec();
     // TODO: Need to do a bunch of checking here for bad names.
-    if(QDialog::Accepted) {
+    if(result == QDialog::Accepted) {
         for(int i=0; i < d.treeWidget->topLevelItemCount(); i++) {
             item = (TypeItem *)d.treeWidget->topLevelItem(i);
             std::cout << item->name.toStdString();
@@ -385,5 +415,29 @@ MainWindow::addType(void) {
 
 void
 MainWindow::addToWatchlist(void) {
-    std::cout << "Watch Tag" << std::endl;
+    TagBaseItem *item;
+    WatchItem *watchitem;
+
+    item = (TagBaseItem *)treeWidget->currentItem();
+    QString tagname = item->data(0, Qt::DisplayRole).toString();
+    try {
+        watchitem = new WatchItem(treeWidgetWatch, tagname.toStdString().c_str());
+    }
+    catch(int x) {
+        statusbar->showMessage(QString("Unable to add tag to watchlist - ") + dax_errstr(x));
+        return;
+    }
+
+    treeWidgetWatch->addTopLevelItem(watchitem);
+}
+
+void
+MainWindow::delFromWatchlist(void) {
+    WatchItem *item;
+    int index;
+
+    item = (WatchItem *)treeWidgetWatch->currentItem();
+    index = treeWidgetWatch->indexOfTopLevelItem(item);
+    treeWidgetWatch->takeTopLevelItem(index);
+    delete item;
 }

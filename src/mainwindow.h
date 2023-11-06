@@ -24,6 +24,7 @@
 #include <QTimer>
 #include "dax.h"
 #include "tagitem.h"
+#include "watchitem.h"
 #include "eventworker.h"
 #include "aboutdialog.h"
 #include "addtagdialog.h"
@@ -56,6 +57,7 @@ class MainWindow : public QMainWindow, public Ui_MainWindow
         void updateTime(int msec);
         void aboutDialog(void);
         void treeContextMenu(const QPoint& pos);
+        void treeWatchContextMenu(const QPoint& pos);
         void treeItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
         void treeItemActivate(QTreeWidgetItem *item, int column);
         void editAccept(void);
@@ -63,6 +65,7 @@ class MainWindow : public QMainWindow, public Ui_MainWindow
         void deleteTag(void);
         void addType(void);
         void addToWatchlist(void);
+        void delFromWatchlist(void);
 
     signals:
         void operate(void);

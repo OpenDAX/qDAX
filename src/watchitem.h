@@ -19,8 +19,8 @@
  *  Header file for tag item classes that represent the items in the tag Tree
  */
 
-#ifndef TAGITEM_H
-#define TAGITEM_H
+#ifndef WATCHITEM_H
+#define WATCHITEM_H
 
 #include <QObject>
 #include <QTreeWidget>
@@ -33,43 +33,21 @@
 #define ITEM_TYPE_ROOT 1001
 #define ITEM_TYPE_LEAF 1002
 
-class TagBaseItem : public QTreeWidgetItem
-{
-    protected:
-        tag_handle h;
-
-    public:
-        bool writable = true;
-        bool readonly = false;
-
-        TagBaseItem(QTreeWidget *parent, int type);
-        TagBaseItem(QTreeWidgetItem *parent, int type);
-
-        tag_handle handle(void) { return h; };
-};
-
-
-class TagLeafItem : public TagBaseItem
-{
-    public:
-        TagLeafItem(QTreeWidgetItem *parent, QString tagname, QString typestr);
-        void updateValues(void *data);
-
-};
-
-
-class TagRootItem : public TagBaseItem
+class WatchItem : public QTreeWidgetItem
 {
     private:
-        void *_data;
+        static void _update_tag(Dax *d, void *udata);
+
+    protected:
+        tag_handle h;
+        dax_id event_id;
+        void *data;
 
     public:
-        TagRootItem(QTreeWidget *parent, dax_tag tag);
-        ~TagRootItem();
-        void addArrayItem(QTreeWidgetItem *item, char * name, tag_type type, int index);
-        void addCDTItems(QTreeWidgetItem *item, QString name, tag_type type);
-        void *getData(void) { return _data; };
-        void updateValues(void);
+        WatchItem(QTreeWidget *parent, QString tagname);
+        ~WatchItem();
+
+        tag_handle handle(void) { return h; };
 };
 
 

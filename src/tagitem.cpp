@@ -20,6 +20,7 @@
  */
 
 #include <iostream>
+#include "qdax.h"
 #include "tagitem.h"
 
 extern Dax dax;
@@ -27,10 +28,9 @@ extern Dax dax;
 TagBaseItem::TagBaseItem(QTreeWidget *parent, int type) : QTreeWidgetItem(parent, type) {
 }
 
+
 TagBaseItem::TagBaseItem(QTreeWidgetItem *parent, int type) : QTreeWidgetItem(parent, type) {
 }
-
-
 
 
 TagLeafItem::TagLeafItem(QTreeWidgetItem *parent, QString tagname, QString typestr) : TagBaseItem(parent, ITEM_TYPE_LEAF) {
@@ -39,7 +39,7 @@ TagLeafItem::TagLeafItem(QTreeWidgetItem *parent, QString tagname, QString types
 
     int result = dax.getHandle(&h, (char *)tagname.toStdString().c_str());
     if(result) {
-        dax_log(LOG_ERROR, "Unable to get tag handle ");
+        dax_log(DAX_LOG_ERROR, "Unable to get tag handle ");
     }
     //std::cout << tagname.toStdString() << " byte = " << h.byte << std::endl;
 }
@@ -81,8 +81,7 @@ TagLeafItem::updateValues(void *data) {
 }
 
 
-TagRootItem::TagRootItem(QTreeWidget *parent, dax_tag tag) : TagBaseItem(parent, ITEM_TYPE_ROOT)
-{
+TagRootItem::TagRootItem(QTreeWidget *parent, dax_tag tag) : TagBaseItem(parent, ITEM_TYPE_ROOT) {
     QString typestr;
     QString tagname;
 
@@ -91,7 +90,7 @@ TagRootItem::TagRootItem(QTreeWidget *parent, dax_tag tag) : TagBaseItem(parent,
 
     int result = dax.getHandle(&h, tag.name);
     if(result) {
-        dax_log(LOG_ERROR, "Unable to get tag handle ");
+        dax_log(DAX_LOG_ERROR, "Unable to get tag handle ");
     }
     if(tag.attr & TAG_ATTR_READONLY) readonly = true;
     _data = malloc(h.size);
@@ -111,8 +110,7 @@ TagRootItem::TagRootItem(QTreeWidget *parent, dax_tag tag) : TagBaseItem(parent,
 }
 
 
-TagRootItem::~TagRootItem()
-{
+TagRootItem::~TagRootItem() {
     if(_data != NULL) {
         free(_data);
     }

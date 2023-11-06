@@ -20,6 +20,7 @@ qt_add_executable(qdax
      main.cpp
      dax.cpp
      tagitem.cpp
+     watchitem.cpp
      eventworker.cpp
      mainwindow.ui
      mainwindow.cpp
