@@ -37,9 +37,10 @@ WatchItem::WatchItem(QTreeWidget *parent, QString tagname) : QTreeWidgetItem(par
     if(h.count > 1 && h.type != DAX_CHAR) {
         throw ERR_2BIG;
     }
-    DF("count = %d", h.count);
+    //DF("index = %d, byte = %d, count = %d",h.index, h.byte, h.count);
     data = malloc(h.size);
     dax.read(h, data);
+
 
     result = dax.eventAdd(&h, EVENT_CHANGE, NULL, &event_id, _update_tag, this, NULL);
     if(result) {
@@ -51,7 +52,6 @@ WatchItem::WatchItem(QTreeWidget *parent, QString tagname) : QTreeWidgetItem(par
         free(data);
         throw result;
     }
-
     if(h.count > 1 && h.type==DAX_CHAR) {
         for(int n=0; n<h.count;n++) {
             valstr += ((char *)data)[n];
@@ -59,12 +59,12 @@ WatchItem::WatchItem(QTreeWidget *parent, QString tagname) : QTreeWidgetItem(par
         setData(1, Qt::DisplayRole, QString(valstr.c_str()));
     } else {
         if(h.type == DAX_BOOL) {
-            if(((uint8_t *)data)[h.byte] & (uint8_t)(0x01 << h.bit))
+            if(((uint8_t *)data)[0] & (uint8_t)(0x01 << h.bit))
                 valstr = "true";
             else
                 valstr = "false";
         } else {
-            valstr = dax.valueString(h.type, &((char *)data)[h.byte], 0);
+            valstr = dax.valueString(h.type, data, 0);
         }
         setData(1, Qt::DisplayRole, QString(valstr.c_str()));
     }
@@ -84,12 +84,12 @@ WatchItem::_update_tag(Dax *d, void *udata) {
         item->setData(1, Qt::DisplayRole, QString(valstr.c_str()));
     } else {
         if(item->h.type == DAX_BOOL) {
-            if(((uint8_t *)item->data)[item->h.byte] & (uint8_t)(0x01 << item->h.bit))
+            if(((uint8_t *)item->data)[0] & (uint8_t)(0x01 << item->h.bit))
                 valstr = "true";
             else
                 valstr = "false";
         } else {
-            valstr = dax.valueString(item->h.type, &((char *)item->data)[item->h.byte], 0);
+            valstr = dax.valueString(item->h.type, item->data, 0);
         }
         item->setData(1, Qt::DisplayRole, QString(valstr.c_str()));
     }
